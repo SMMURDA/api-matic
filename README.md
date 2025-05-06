@@ -1,7 +1,8 @@
 
 # API-MATIC
 <p align="center">
-  <img src="screenshot/API-Matic-1.jpg" alt="API-Matic Screenshot" width="100%" style="max-width: 700px; height: auto;">
+  <img src="screenshot/API-Matic-1.jpg" alt="Screenshot 1" width="45%" style="margin-right: 10px;">
+  <img src="screenshot/API-Matic-2.jpg" alt="Screenshot 2" width="45%">
 </p>
 API-MATIC is a simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, and generating fake user data.
 
