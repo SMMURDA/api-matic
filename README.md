@@ -39,6 +39,6 @@ API-MATIC is a simple public API collection for tasks like video embedding, doma
 
 ## Notes
 
-- Required API for Shorten (bitly)
+- Required API for Shorten (bitly) change on '.env'
 - Video embed only works with specific domains.
 - Make sure URLs are valid and accessible.
