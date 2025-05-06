@@ -1,6 +1,7 @@
 
 # API-MATIC
-
+![API-Matic Screenshot](screenshot/API-Matic-1.jpg)
+![API-Matic Screenshot](screenshot/API-Matic-2.jpg)
 API-MATIC is a simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, and generating fake user data.
 
 ## Endpoints
