@@ -1,0 +1,12 @@
+{
+  "title": "URL Shortener",
+  "description": "Memendekkan URL panjang menggunakan Bitly.",
+  "path": "/api/shorten?url=https://contoh.com",
+  "method": "GET",
+  "placeholder": "https://contoh.com",
+  "response": {
+    "success": true,
+    "original_url": "https://contoh.com",
+    "short_url": "https://bit.ly/abc123"
+  }
+}

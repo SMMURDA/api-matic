@@ -1,0 +1,31 @@
+{
+  "title": "WHOIS & Metadata Checker",
+  "description": "Ambil informasi WHOIS lengkap dan metadata dari halaman web (title, description, keywords).",
+  "method": "GET",
+  "path": "/api/whois?url=https://example.com",
+  "placeholder": "https://example.com",
+  "response": {
+    "success": true,
+    "url": "https://example.com",
+    "title": "Example Domain",
+    "description": "This domain is for use in illustrative examples in documents.",
+    "keywords": "example, domain, test",
+    "whois": {
+      "domainName": "EXAMPLE.COM",
+      "registrar": "EXAMPLE REGISTRAR INC.",
+      "creationDate": "2000-01-01T00:00:00Z",
+      "updateDate": "2024-01-01T00:00:00Z",
+      "expirationDate": "2025-01-01T00:00:00Z",
+      "nameServers": [
+        "NS1.EXAMPLE.COM",
+        "NS2.EXAMPLE.COM"
+      ],
+      "status": [
+        "clientTransferProhibited",
+        "clientUpdateProhibited"
+      ],
+      "contactEmail": "owner@example.com",
+      "contactPhone": "+1.234567890"
+    }
+  }
+}
