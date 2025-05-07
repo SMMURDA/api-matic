@@ -7,6 +7,23 @@
 
 **API-MATIC** is a simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, IP geolocation, and generating fake user data.
 
+## ⚙️ Tech Stack
+
+![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-Backend-blue?logo=express&logoColor=white)
+![Puppeteer](https://img.shields.io/badge/Puppeteer-Web%20Automation-ff69b4?logo=puppeteer&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-HTTP%20Client-yellow?logo=axios&logoColor=black)
+![Cheerio](https://img.shields.io/badge/Cheerio-HTML%20Parser-orange?logo=data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjRkZGIiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnL3N2ZyI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRkY2NjAwIi8+PC9zdmc+)
+![dotenv](https://img.shields.io/badge/dotenv-Env%20Vars-brightgreen?logo=dotenv&logoColor=white)
+![faker-js](https://img.shields.io/badge/Faker.js-Fake%20Data-lightgrey?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjYjdiN2I3Ii8+PC9zdmc+)
+![path](https://img.shields.io/badge/Node%20Path-Core%20Module-blueviolet)
+![WHOIS](https://img.shields.io/badge/WHOIS-Domain%20Lookup-9cf)
+![URL](https://img.shields.io/badge/URL-Parser-informational)
+
+> Built using modern Node.js modules with minimal dependencies.
+
+---
+
 ## Endpoints
 
 | Endpoint           | Method | Description                                       | Example Usage                                                                 |
