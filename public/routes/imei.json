@@ -1,0 +1,12 @@
+{
+  "title": "Cek IMEI Bea Cukai",
+  "description": "Memeriksa status IMEI melalui situs Bea Cukai menggunakan scraping dan OCR untuk captcha.",
+  "method": "GET",
+  "path": "/api/imei?imei=IMEI_NUMBER",
+  "placeholder": "Masukkan nomor IMEI (contoh: 868880043307120)",
+  "response": {
+    "imei": "868880043307120",
+    "captcha": "7e47c3",
+    "result": "IMEI terdaftar dan sesuai dengan peraturan yang berlaku di Indonesia."
+  }
+}
