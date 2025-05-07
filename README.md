@@ -5,20 +5,13 @@
   <img src="screenshot/API-Matic-2.jpg" alt="Screenshot 2" width="45%">
 </p>
 
-**API-MATIC** is a simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, IP geolocation, and generating fake user data.
-
-#### Tech Stack
-
 ![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-Backend-blue?logo=express&logoColor=white)
 ![Puppeteer](https://img.shields.io/badge/Puppeteer-Web%20Automation-ff69b4?logo=puppeteer&logoColor=white)
-![dotenv](https://img.shields.io/badge/dotenv-Env%20Vars-brightgreen?logo=dotenv&logoColor=white)
-![path](https://img.shields.io/badge/Node%20Path-Core%20Module-blueviolet)
-![URL](https://img.shields.io/badge/URL-Parser-informational)
-
-> Built using modern Node.js modules with minimal dependencies.
 
 ---
+
+Simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, IP geolocation, and generating fake user data.
 
 #### Endpoints
 
