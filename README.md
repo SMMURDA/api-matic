@@ -1,8 +1,8 @@
 ### API-MATIC
 
 <p align="center">
-  <img src="screenshot/API-Matic-1.jpg" alt="Screenshot 1" width="45%" style="margin-right: 10px;">
-  <img src="screenshot/API-Matic-2.jpg" alt="Screenshot 2" width="45%">
+  <img src="screenshot/API-Matic-3.jpg" alt="Screenshot 1" width="45%" style="margin-right: 10px;">
+  <img src="screenshot/API-Matic-4.jpg" alt="Screenshot 2" width="45%">
 </p>
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
