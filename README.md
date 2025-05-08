@@ -7,7 +7,7 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-Backend-blue?logo=express&logoColor=white)
-![Docker Pull](https://img.shields.io/badge/Docker%20Pull-smmurda/matic--api-blue?logo=docker&logoColor=white)
+![Docker Pull](https://img.shields.io/badge/Docker-smmurda/matic--api-blue?logo=docker&logoColor=white)
 ![Docker Pull](https://img.shields.io/docker/pulls/smmurda/matic-api?label=Pulls&logo=docker&logoColor=white)
 
 ---
