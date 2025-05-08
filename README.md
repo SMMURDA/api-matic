@@ -23,6 +23,20 @@ Simple public API collection for tasks like video embedding, domain WHOIS lookup
 | `/api/randomuser`  | GET    | Generate a random fake user profile               | `/api/randomuser`                                                             |
 | `/api/iplocator`   | GET    | Get detailed geolocation info from an IP address  | `/api/iplocator?ip=8.8.8.8`                                                   |
 
+### Pull Docker Image
+
+```bash
+docker pull ghcr.io/smmurda/api-matic/matic-api:latest
+```
+
+---
+
+### Run Container
+
+```bash
+docker run -d -p 3000:3000 --name matic-api ghcr.io/smmurda/api-matic/matic-api:latest
+```
+
 #### Notes
 
 - Bitly shortening requires API key configuration in `.env`
