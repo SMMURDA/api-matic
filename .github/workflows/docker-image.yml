@@ -32,18 +32,22 @@ jobs:
     # Build Docker Image
     - name: Build the Docker image
       run: |
-        IMAGE_NAME=ghcr.io/${{ github.repository }}/matic-api:latest
-        docker build . --file Dockerfile --tag $IMAGE_NAME
+        IMAGE_NAME="ghcr.io/${{ github.repository }}/matic-api:latest"
+        IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')  # Ubah menjadi lowercase
+        docker build . --file Dockerfile --tag $IMAGE_NAME_LOWER
 
     # Push Docker Image to GHCR
     - name: Push Docker image to GHCR
       run: |
-        IMAGE_NAME=ghcr.io/${{ github.repository }}/matic-api:latest
-        docker push $IMAGE_NAME
+        IMAGE_NAME="ghcr.io/${{ github.repository }}/matic-api:latest"
+        IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')  # Ubah menjadi lowercase
+        docker push $IMAGE_NAME_LOWER
 
     # Set image as public on GHCR
     - name: Set image as public on GHCR
       run: |
+        IMAGE_NAME="ghcr.io/${{ github.repository }}/matic-api:latest"
+        IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')  # Ubah menjadi lowercase
         curl -X PATCH \
           -H "Authorization: Bearer ${{ secrets.GHCR_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
@@ -53,6 +57,7 @@ jobs:
     # Optional: Run Docker container
     - name: Run Docker container
       run: |
-        IMAGE_NAME=ghcr.io/${{ github.repository }}/matic-api:latest
-        docker run --name matic-api -d $IMAGE_NAME
+        IMAGE_NAME="ghcr.io/${{ github.repository }}/matic-api:latest"
+        IMAGE_NAME_LOWER=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')  # Ubah menjadi lowercase
+        docker run --name matic-api -d $IMAGE_NAME_LOWER
         docker ps
