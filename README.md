@@ -23,6 +23,8 @@ Simple public API collection for tasks like video embedding, domain WHOIS lookup
 | `/api/shorten`     | GET    | Shorten a long URL using Bitly                    | `/api/shorten?url=https://example.com`                                        |
 | `/api/randomuser`  | GET    | Generate a random fake user profile               | `/api/randomuser`                                                             |
 | `/api/iplocator`   | GET    | Get detailed geolocation info from an IP address  | `/api/iplocator?ip=8.8.8.8`                                                   |
+| `/api/docparser`   | POST   | Extract text from uploaded files (supports OCR)   | `/api/docparser` (Upload PDF, DOCX, JPG, PNG files)                           |
+| `/api/qrcode`      | POST   | Generate a QR code from provided data             | `/api/qrcode` (Request JSON with `data` field to generate QR code)             |
 
 #### Pull Docker Image
 
@@ -46,7 +48,7 @@ docker run -d -p 3000:3000 --name matic-api ghcr.io/smmurda/api-matic/matic-api:
 
 - Bitly shortening requires API key configuration in `.env`
 - Video embedding supports limited domains:
-  - `*videos.com`
-  - `xn*x.com`
-  - `p*rnh*b.com`
+  - `*videos.com, xn*x.com & p*rnh*b.com`
 - Ensure all URLs or IPs are valid and publicly accessible
+- Files & OCR in /api/docparser supports
+  - `.jpeg, .png, .jpeg .pdf, .docx, .json, .html, .md, & csv`
