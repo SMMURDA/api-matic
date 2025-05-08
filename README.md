@@ -7,7 +7,7 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-Backend-blue?logo=express&logoColor=white)
-![Puppeteer](https://img.shields.io/badge/Puppeteer-Web%20Automation-ff69b4?logo=puppeteer&logoColor=white)
+![Docker Pull](https://img.shields.io/badge/Docker%20Pull-ghcr.io/smmurda/api--matic-green?logo=docker&logoColor=white)
 
 ---
 
