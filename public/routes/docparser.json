@@ -1,0 +1,13 @@
+{
+  "title": "Doc Parser",
+  "description": "Ekstrak teks dari berbagai jenis file dokumen seperti PDF, Word (DOCX), gambar (JPG/PNG) menggunakan OCR, serta format lainnya seperti TXT, JSON, CSV, HTML, dan Markdown. Cocok untuk kebutuhan parsing konten dokumen otomatis.",
+  "method": "POST",
+  "path": "/api/docparser",
+  "placeholder": "Upload file: PDF, DOCX, TXT, JPG, PNG, JSON, CSV, HTML, MD",
+  "response": {
+    "success": true,
+    "filename": "contoh.pdf",
+    "mimetype": "application/pdf",
+    "text": "Isi teks dari file akan muncul di sini..."
+  }
+}

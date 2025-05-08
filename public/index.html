@@ -6,7 +6,6 @@
   <title>Matic API Docs</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <style>
     .dark-toggle {
       margin-left: auto;
@@ -22,6 +21,12 @@
     .contact-link:hover {
       color: var(--bs-link-hover-color, #0d6efd);
     }
+    img.qrcode-preview {
+      max-width: 200px;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -29,18 +34,12 @@
     <div class="d-flex align-items-center gap-3">
       <h1 class="fw-bold m-0"><i class="bi bi-code-slash"></i> Matic API Docs</h1>
       <span class="badge bg-dark">REST 1.0</span>
-      <small class="text-muted">Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener">MIT</a></small>
+      <small class="text-muted">Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT</a></small>
     </div>
     <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
-      <a href="https://wa.me/6285179612320" target="_blank" rel="noopener" class="contact-link">
-        <i class="bi bi-whatsapp"></i> WhatsApp
-      </a>
-      <a href="mailto:ask@topup.eu.org" class="contact-link">
-        <i class="bi bi-envelope"></i> Email
-      </a>
-      <a href="https://instagram.com/bovalonee" target="_blank" rel="noopener" class="contact-link">
-        <i class="bi bi-instagram"></i> Instagram
-      </a>
+      <a href="https://wa.me/6285179612320" class="contact-link"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+      <a href="mailto:ask@topup.eu.org" class="contact-link"><i class="bi bi-envelope"></i> Email</a>
+      <a href="https://instagram.com/bovalonee" class="contact-link"><i class="bi bi-instagram"></i> Instagram</a>
       <div class="form-check form-switch dark-toggle">
         <input class="form-check-input" type="checkbox" id="darkSwitch" />
         <label class="form-check-label" for="darkSwitch"><i class="bi bi-moon-fill"></i></label>
@@ -57,9 +56,10 @@
         <option value="shorten">/api/shorten</option>
         <option value="randomuser">/api/randomuser</option>
         <option value="iplocator">/api/iplocator</option>
+        <option value="docparser">/api/docparser</option>
+        <option value="qrcode">/api/qrcode</option>
       </select>
     </div>
-
     <div id="doc"></div>
   </div>
 
@@ -67,9 +67,19 @@
     async function loadEndpoint() {
       const name = document.getElementById('endpointSelect').value;
       const doc = document.getElementById('doc');
+
       try {
         const res = await fetch(`/routes/${name}.json`);
         const data = await res.json();
+
+        let inputField = '';
+        if (name === 'docparser') {
+          inputField = `<input type="file" class="form-control" id="input-${name}" accept=".pdf,.doc,.docx">`;
+        } else if (['randomuser'].includes(name)) {
+          inputField = ''; // Tidak perlu input
+        } else {
+          inputField = `<input type="text" class="form-control" id="input-${name}" placeholder="${data.placeholder || 'Teks / URL'}">`;
+        }
 
         doc.innerHTML = `
           <div class="endpoint-card">
@@ -77,14 +87,15 @@
             <p class="text-muted">${data.description}</p>
             <div class="mb-3"><span class="badge text-bg-primary">${data.method}</span> <code>${data.path}</code></div>
 
-            <div class="mb-3">
-              <label class="form-label">Try it out</label>
-              <input type="text" class="form-control" id="input-${name}" placeholder="${data.placeholder || 'https://example.com/videos/test'}">
-            </div>
+            ${inputField ? `
+              <div class="mb-3">
+                <label class="form-label">Try it out</label>
+                ${inputField}
+              </div>
+            ` : ''}
+
             <div class="d-flex align-items-center gap-2 mb-3">
-              <button class="btn btn-primary" id="btn-${name}" onclick="tryApi('${name}')">
-                <i class="bi bi-play-fill"></i> Kirim
-              </button>
+              <button class="btn btn-primary" id="btn-${name}" onclick="tryApi('${name}')"><i class="bi bi-play-fill"></i> Kirim</button>
               <div id="loading-${name}" class="spinner-border text-primary d-none" role="status"></div>
               <span id="duration-${name}" class="text-muted small"></span>
             </div>
@@ -92,15 +103,16 @@
             <h6 class="fw-semibold">Hasil Respons:</h6>
             <div class="d-flex gap-2 mb-2">
               <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
-              <button class="btn btn-outline-success btn-sm" onclick="downloadResponse('${name}')"><i class="bi bi-download"></i> Unduh</button>
+              <a class="btn btn-outline-success btn-sm d-none" id="download-${name}" download><i class="bi bi-download"></i> Unduh</a>
             </div>
             <pre id="output-${name}"></pre>
+            <img id="image-${name}" class="qrcode-preview d-none" />
 
             <h6 class="fw-semibold mt-4">Contoh Respons:</h6>
             <pre>${JSON.stringify(data.response, null, 2)}</pre>
           </div>
         `;
-      } catch (e) {
+      } catch {
         doc.innerHTML = '<div class="alert alert-danger">Gagal memuat dokumentasi endpoint.</div>';
       }
     }
@@ -108,31 +120,64 @@
     async function tryApi(name) {
       const input = document.getElementById(`input-${name}`);
       const output = document.getElementById(`output-${name}`);
-      const btn = document.getElementById(`btn-${name}`);
+      const image = document.getElementById(`image-${name}`);
+      const download = document.getElementById(`download-${name}`);
       const loading = document.getElementById(`loading-${name}`);
       const duration = document.getElementById(`duration-${name}`);
-      const query = input.value;
-      output.textContent = '';
-      duration.textContent = '';
-      loading.classList.remove('d-none');
       const start = performance.now();
 
+      output.textContent = '';
+      image?.classList.add('d-none');
+      download?.classList.add('d-none');
+      loading.classList.remove('d-none');
+      duration.textContent = '';
+
       try {
-        let param = '';
-        if (name === 'randomuser') {
-          param = '';
-        } else if (name === 'iplocator') {
-          param = 'ip=' + encodeURIComponent(query);
+        let res, json;
+
+        if (name === 'docparser') {
+          const file = input?.files?.[0];
+          if (!file) {
+            output.textContent = 'Pilih file terlebih dahulu.';
+            return;
+          }
+          const formData = new FormData();
+          formData.append('file', file);
+          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
+        } else if (name === 'randomuser') {
+          res = await fetch(`/api/${name}`);
         } else {
-          param = 'url=' + encodeURIComponent(query);
+          const value = input?.value.trim();
+          if (!value) {
+            output.textContent = 'Masukkan input.';
+            return;
+          }
+
+          const body = name === 'qrcode'
+            ? JSON.stringify({ text: value })
+            : null;
+
+          res = await fetch(`/api/${name}${name === 'qrcode' ? '' : '?' + (name === 'iplocator' ? 'ip=' : 'url=') + encodeURIComponent(value)}`, {
+            method: name === 'qrcode' ? 'POST' : 'GET',
+            headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
+            body
+          });
         }
 
-        const res = await fetch(`/api/${name}?${param}`);
-        const json = await res.json();
+        json = await res.json();
         const time = performance.now() - start;
-        output.textContent = JSON.stringify(json, null, 2);
         duration.textContent = `(${Math.round(time)} ms)`;
-      } catch (e) {
+
+        output.textContent = JSON.stringify(json, null, 2);
+
+        if (name === 'qrcode' && json.dataUrl) {
+          image.src = json.dataUrl;
+          image.classList.remove('d-none');
+          download.href = json.dataUrl;
+          download.classList.remove('d-none');
+        }
+
+      } catch {
         output.textContent = 'Gagal memuat API.';
       } finally {
         loading.classList.add('d-none');
@@ -141,29 +186,13 @@
 
     function copyResponse(name) {
       const output = document.getElementById(`output-${name}`).textContent;
-      navigator.clipboard.writeText(output).then(() => {
-        alert('Respons disalin ke clipboard.');
-      });
-    }
-
-    function downloadResponse(name) {
-      const output = document.getElementById(`output-${name}`).textContent;
-      const blob = new Blob([output], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${name}-response.json`;
-      link.click();
-      URL.revokeObjectURL(url);
+      navigator.clipboard.writeText(output).then(() => alert('Respons disalin.'));
     }
 
     window.onload = loadEndpoint;
 
-    // Dark mode toggle
-    const toggle = document.getElementById('darkSwitch');
-    toggle.addEventListener('change', () => {
-      const html = document.documentElement;
-      html.setAttribute('data-bs-theme', toggle.checked ? 'dark' : 'light');
+    document.getElementById('darkSwitch').addEventListener('change', e => {
+      document.documentElement.setAttribute('data-bs-theme', e.target.checked ? 'dark' : 'light');
     });
   </script>
 

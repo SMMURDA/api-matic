@@ -1,0 +1,10 @@
+{
+  "title": "QR Code Generator",
+  "description": "Menghasilkan QR Code dalam format base64 dari teks atau URL yang diberikan.",
+  "method": "POST",
+  "path": "/api/qrcode",
+  "placeholder": "Masukkan teks atau URL",
+  "response": {
+    "dataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+  }
+}
