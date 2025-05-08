@@ -26,7 +26,7 @@ jobs:
       uses: docker/login-action@v2
       with:
         username: ${{ github.actor }}  # Username GitHub yang otomatis
-        password: ${{ secrets.GITHUB_TOKEN }}  # Token GitHub yang sudah ada (GitHub Actions memberikan token ini secara otomatis)
+        password: ${{ secrets.GHCR_TOKEN }}  # Token GitHub yang sudah ada (GitHub Actions memberikan token ini secara otomatis)
 
     # Build Docker Image
     - name: Build the Docker image
