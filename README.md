@@ -24,26 +24,20 @@ Simple public API collection for tasks like video embedding, domain WHOIS lookup
 | `/api/randomuser`  | GET    | Generate a random fake user profile               | `/api/randomuser`                                                             |
 | `/api/iplocator`   | GET    | Get detailed geolocation info from an IP address  | `/api/iplocator?ip=8.8.8.8`                                                   |
 | `/api/docparser`   | POST   | Extract text from uploaded files (supports OCR)   | `/api/docparser` (Upload PDF, DOCX, JPG, PNG files)                           |
-| `/api/qrcode`      | POST   | Generate a QR code from provided data             | `/api/qrcode` (Request JSON with `data` field to generate QR code)             |
-
+| `/api/qrcode`      | POST   | Generate a QR code from provided data             | `/api/qrcode` (Input text/linked)             |
+---
 #### Pull Docker Image
 
 ```bash
 docker pull smmurda/matic-api
 ```
-or
-```bash
-docker pull ghcr.io/smmurda/api-matic/matic-api:latest
-```
-
----
 
 #### Run Container
 
 ```bash
-docker run -d -p 3000:3000 --name matic-api ghcr.io/smmurda/api-matic/matic-api:latest
+docker run -d -p 3000:3000 --name matic-api smmurda/matic-api
 ```
-
+---
 #### Notes
 
 - Bitly shortening requires API key configuration in `.env`
