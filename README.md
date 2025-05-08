@@ -7,7 +7,8 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x+-green?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express.js-Backend-blue?logo=express&logoColor=white)
-![Docker Pull](https://img.shields.io/badge/Docker%20Pull-ghcr.io/smmurda/api--matic-green?logo=docker&logoColor=white)
+![Docker Pull](https://img.shields.io/badge/Docker%20Pull-smmurda/matic--api-blue?logo=docker&logoColor=white)
+![Docker Pull](https://img.shields.io/docker/pulls/smmurda/matic-api?label=Pulls&logo=docker&logoColor=white)
 
 ---
 
@@ -25,6 +26,10 @@ Simple public API collection for tasks like video embedding, domain WHOIS lookup
 
 #### Pull Docker Image
 
+```bash
+docker pull smmurda/matic-api
+```
+or
 ```bash
 docker pull ghcr.io/smmurda/api-matic/matic-api:latest
 ```
