@@ -1,6 +1,6 @@
 {
   "title": "WHOIS & Metadata Checker",
-  "description": "Ambil informasi WHOIS lengkap dan metadata dari halaman web (title, description, keywords).",
+  "description": "Retrieve complete WHOIS information and metadata from a web page (title, description, keywords).",
   "method": "GET",
   "path": "/api/whois?url=https://example.com",
   "placeholder": "https://example.com",
@@ -27,5 +27,6 @@
       "contactEmail": "owner@example.com",
       "contactPhone": "+1.234567890"
     }
-  }
+  },
+  "curl": "curl 'https://matic.eu.org/api/whois?url=https://example.com'"
 }

@@ -1,9 +1,9 @@
 {
   "title": "IP Locator",
-  "description": "Melacak informasi lokasi dan jaringan berdasarkan alamat IP.",
+  "description": "Track location and network information based on an IP address.",
   "method": "GET",
   "path": "/api/iplocator?ip=8.8.8.8",
-  "placeholder": "Masukkan alamat IP, contoh: 8.8.8.8",
+  "placeholder": "Enter an IP address, e.g., 8.8.8.8",
   "response": {
     "ip": "8.8.8.8",
     "version": "IPv4",
@@ -31,5 +31,6 @@
     "asn": "AS15169",
     "org": "Google LLC",
     "hostname": "dns.google"
-  }
+  },
+  "curl": "curl https://matic.eu.org/api/iplocator?ip=8.8.8.8"
 }

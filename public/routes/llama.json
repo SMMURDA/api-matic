@@ -1,11 +1,12 @@
 {
   "title": "Meta LLaMA 4 Maverick",
-  "description": "Mengirim prompt ke model LLaMA 4 Maverick (via OpenRouter). Dapat menggunakan sesi opsional.",
+  "description": "Send a prompt to the LLaMA 4 Maverick model. It supports an optional session.",
   "method": "POST",
   "path": "/api/llama",
-  "placeholder": "Apa itu kecerdasan buatan?",
+  "placeholder": "What is artificial intelligence?",
   "response": {
     "session": "default",
-    "response": "Kecerdasan buatan adalah bidang ilmu komputer yang berfokus pada pembuatan sistem yang dapat melakukan tugas yang biasanya memerlukan kecerdasan manusia."
-  }
+    "response": "Artificial intelligence is a field of computer science focused on creating systems that can perform tasks that typically require human intelligence."
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/llama -H \"Content-Type: application/json\" -d '{\"prompt\": \"What is artificial intelligence?\"}'"
 }

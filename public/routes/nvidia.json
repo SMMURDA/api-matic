@@ -1,0 +1,12 @@
+{
+  "title": "NVIDIA Chat",
+  "description": "Llama-3.1-Nemotron-Ultra-253B-v1 is a large language model (LLM) optimized for advanced reasoning, human-interactive chat, retrieval-augmented generation (RAG), and tool-calling tasks.",
+  "method": "POST",
+  "path": "/api/nvidia",
+  "placeholder": "Masukkan prompt...",
+  "response": {
+    "status": "success",
+    "response": "Halo! Saya adalah model bahasa dari NVIDIA. Apa yang bisa saya bantu?"
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/nvidia \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"prompt\": \"Jelaskan teknologi RTX dari NVIDIA\"}'"
+}

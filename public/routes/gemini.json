@@ -1,9 +1,9 @@
 {
   "title": "Gemini Chat",
-  "description": "Berinteraksi dengan model Gemini 2.0 dari Google. Mendukung teks dan gambar.",
+  "description": "Interact with Google's Gemini 2.0 model. Supports both text and image input.",
   "method": "POST",
   "path": "/api/gemini",
-  "placeholder": "Masukkan pertanyaan...",
+  "placeholder": "Enter your question...",
   "fields": [
     {
       "name": "prompt",
@@ -15,19 +15,20 @@
       "name": "session",
       "type": "text",
       "required": false,
-      "label": "Session ID (opsional)"
+      "label": "Session ID (optional)"
     },
     {
       "name": "image",
       "type": "file",
       "required": false,
       "accept": "image/*",
-      "label": "Upload Gambar (opsional)"
+      "label": "Upload Image (optional)"
     }
   ],
   "response": {
     "success": true,
-    "response": "Ini adalah respons dari Gemini berdasarkan prompt dan/atau gambar.",
+    "response": "This is Gemini's response based on the prompt and/or image.",
     "session": "d3087e60-4019-4dd3-b2d2-3ccad1c22b15"
-  }
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/gemini \\\n  -F \"prompt=What is shown in this image?\" \\\n  -F \"image=@/path/to/image.jpg\""
 }

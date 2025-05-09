@@ -1,11 +1,12 @@
 {
   "title": "DeepSeek AI",
-  "description": "Menghasilkan respons dari LLM DeepSeek Chat dengan parameter prompt dan session (opsional).",
+  "description": "Generates responses from the DeepSeek Chat LLM using a prompt and an optional session parameter.",
   "method": "POST",
   "path": "/api/deepseek",
-  "placeholder": "Tulis pertanyaan atau perintah...",
+  "placeholder": "Enter your question or command...",
   "response": {
-    "response": "Ini adalah jawaban dari model.",
+    "response": "This is the answer from the model.",
     "session": "cltxy5m1d0001mr0f45fovk0z"
-  }
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/deepseek \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"prompt\": \"What is DeepSeek AI?\", \"session\": \"cltxy5m1d0001mr0f45fovk0z\"}'"
 }

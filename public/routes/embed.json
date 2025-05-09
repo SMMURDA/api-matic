@@ -1,6 +1,6 @@
 {
   "title": "/api/embed",
-  "description": "Menemukan sumber video dari halaman web.",
+  "description": "Find video sources from a web page.",
   "method": "GET",
   "path": "/api/embed?url=https://example.com",
   "params": ["url"],
@@ -15,5 +15,6 @@
         "src": "https://example.com/video.webm"
       }
     ]
-  }
+  },
+  "curl": "curl 'https://matic.eu.org/api/embed?url=https://example.com'"
 }

@@ -14,6 +14,7 @@ const deepseekRoute = require('./public/routes/deepseek');
 const geminiRoute = require('./public/routes/gemini');
 const llamaRoute = require('./public/routes/llama');
 const microsoftRoute = require('./public/routes/microsoft'); // <- Tambahkan ini
+const nvidiaRoute = require('./public/routes/nvidia'); // <- Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.use('/api/deepseek', deepseekRoute);
 app.use('/api/gemini', geminiRoute);
 app.use('/api/llama', llamaRoute);
 app.use('/api/microsoft', microsoftRoute); // <- Rute Microsoft
+app.use('/api/nvidia', nvidiaRoute); // <- Rute Nvidia
 
 // Home
 app.get('/', (req, res) => {

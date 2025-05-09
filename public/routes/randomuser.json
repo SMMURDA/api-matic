@@ -1,9 +1,9 @@
 {
   "title": "Random User Generator",
-  "description": "Menghasilkan data pengguna acak seperti nama, email, alamat, dan avatar.",
+  "description": "Generates random user data such as name, email, address, and avatar.",
   "method": "GET",
   "path": "/api/randomuser",
-  "placeholder": "Tidak diperlukan input",
+  "placeholder": "No input required",
   "response": {
     "success": true,
     "user": {
@@ -28,5 +28,6 @@
       },
       "website": "https://example.com"
     }
-  }
+  },
+  "curl": "curl https://matic.eu.org/api/randomuser"
 }

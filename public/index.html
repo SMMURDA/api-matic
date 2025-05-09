@@ -1,4 +1,3 @@
-<!-- Versi lengkap, termasuk Microsoft -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -47,6 +46,7 @@
         <option value="gemini">/api/gemini</option>
         <option value="llama">/api/llama</option>
         <option value="microsoft">/api/microsoft</option>
+        <option value="nvidia">/api/nvidia</option>
       </select>
     </div>
     <div id="doc"></div>
@@ -66,7 +66,7 @@
           inputField = `<input type="file" class="form-control" id="input-${name}" accept=".pdf,.doc,.docx">`;
         } else if (name === 'randomuser') {
           inputField = '';
-        } else if (['deepseek', 'llama', 'microsoft'].includes(name)) {
+        } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
           inputField = `
             <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
             <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
@@ -108,8 +108,14 @@
             <pre id="output-${name}"></pre>
             <img id="image-${name}" class="qrcode-preview d-none" />
 
-            <h6 class="fw-semibold mt-4">Contoh Respons:</h6>
+            <h6 class="fw-semibold mt-4">Example Respons:</h6>
             <pre>${JSON.stringify(data.response, null, 2)}</pre>
+
+            <h6 class="fw-semibold mt-4">Example Curl:</h6>
+            <div class="d-flex gap-2 mb-2">
+              <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+            </div>
+            <pre id="curl-${name}"><code>${data.curl || 'Tidak tersedia'}</code></pre>
           </div>
         `;
       } catch {
@@ -143,7 +149,7 @@
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
-        } else if (['deepseek', 'llama', 'microsoft'].includes(name)) {
+        } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
           const prompt = input?.value.trim();
           const sessionInput = document.getElementById(`session-${name}`);
           const session = sessionInput?.value.trim();
@@ -199,6 +205,11 @@
     function copyResponse(name) {
       const output = document.getElementById(`output-${name}`).textContent;
       navigator.clipboard.writeText(output).then(() => alert('Respons disalin.'));
+    }
+
+    function copyCurl(name) {
+      const curlText = document.getElementById(`curl-${name}`).innerText;
+      navigator.clipboard.writeText(curlText).then(() => alert('Curl disalin.'));
     }
 
     window.onload = loadEndpoint;
