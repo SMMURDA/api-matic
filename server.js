@@ -10,7 +10,8 @@ const randomUserRoute = require('./public/routes/randomUser');
 const ipLocatorRoute = require('./public/routes/iplocator');
 const docParserRoute = require('./public/routes/docparser');
 const qrCodeRoute = require('./public/routes/qrcode');
-const deepseekRoute = require('./public/routes/deepseek'); // <- Tambahkan ini
+const deepseekRoute = require('./public/routes/deepseek');
+const geminiRoute = require('./public/routes/gemini'); // <- Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // untuk form data
 
 // API routes
 app.use('/api/whois', whoisRoute);
@@ -27,7 +29,8 @@ app.use('/api/randomuser', randomUserRoute);
 app.use('/api/iplocator', ipLocatorRoute);
 app.use('/api/docparser', docParserRoute);
 app.use('/api/qrcode', qrCodeRoute);
-app.use('/api/deepseek', deepseekRoute); // <- Tambahkan ini
+app.use('/api/deepseek', deepseekRoute);
+app.use('/api/gemini', geminiRoute); // <- Rute Gemini
 
 // Home
 app.get('/', (req, res) => {

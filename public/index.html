@@ -7,26 +7,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    .dark-toggle {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .contact-link {
-      text-decoration: none;
-      color: var(--bs-body-color);
-      transition: color 0.3s ease;
-    }
-    .contact-link:hover {
-      color: var(--bs-link-hover-color, #0d6efd);
-    }
-    img.qrcode-preview {
-      max-width: 200px;
-      margin-top: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
+    .dark-toggle { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+    .contact-link { text-decoration: none; color: var(--bs-body-color); transition: color 0.3s ease; }
+    .contact-link:hover { color: var(--bs-link-hover-color, #0d6efd); }
+    img.qrcode-preview { max-width: 200px; margin-top: 1rem; border: 1px solid #ccc; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -59,6 +43,7 @@
         <option value="docparser">/api/docparser</option>
         <option value="qrcode">/api/qrcode</option>
         <option value="deepseek">/api/deepseek</option>
+        <option value="gemini">/api/gemini</option>
       </select>
     </div>
     <div id="doc"></div>
@@ -81,6 +66,12 @@
         } else if (name === 'deepseek') {
           inputField = `
             <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
+            <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
+          `;
+        } else if (name === 'gemini') {
+          inputField = `
+            <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
+            <input type="file" class="form-control mb-2" id="image-${name}" accept="image/*">
             <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
           `;
         } else {
@@ -143,10 +134,7 @@
 
         if (name === 'docparser') {
           const file = input?.files?.[0];
-          if (!file) {
-            output.textContent = 'Pilih file terlebih dahulu.';
-            return;
-          }
+          if (!file) return output.textContent = 'Pilih file terlebih dahulu.';
           const formData = new FormData();
           formData.append('file', file);
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
@@ -156,31 +144,30 @@
           const prompt = input?.value.trim();
           const sessionInput = document.getElementById(`session-${name}`);
           const session = sessionInput?.value.trim();
-
-          if (!prompt) {
-            output.textContent = 'Masukkan prompt.';
-            return;
-          }
-
+          if (!prompt) return output.textContent = 'Masukkan prompt.';
           const body = { prompt };
           if (session) body.session = session;
-
           res = await fetch(`/api/${name}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+        } else if (name === 'gemini') {
+          const prompt = input?.value.trim();
+          const imageInput = document.getElementById(`image-${name}`);
+          const imageFile = imageInput?.files?.[0];
+          const sessionInput = document.getElementById(`session-${name}`);
+          const session = sessionInput?.value.trim();
+          if (!prompt) return output.textContent = 'Masukkan prompt.';
+          const formData = new FormData();
+          formData.append('prompt', prompt);
+          if (imageFile) formData.append('image', imageFile);
+          if (session) formData.append('session', session);
+          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
         } else {
           const value = input?.value.trim();
-          if (!value) {
-            output.textContent = 'Masukkan input.';
-            return;
-          }
-
-          const body = name === 'qrcode'
-            ? JSON.stringify({ text: value })
-            : null;
-
+          if (!value) return output.textContent = 'Masukkan input.';
+          const body = name === 'qrcode' ? JSON.stringify({ text: value }) : null;
           res = await fetch(`/api/${name}${name === 'qrcode' ? '' : '?' + (name === 'iplocator' ? 'ip=' : 'url=') + encodeURIComponent(value)}`, {
             method: name === 'qrcode' ? 'POST' : 'GET',
             headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
@@ -191,7 +178,6 @@
         json = await res.json();
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
-
         output.textContent = JSON.stringify(json, null, 2);
 
         if (name === 'qrcode' && json.dataUrl) {
@@ -200,7 +186,6 @@
           download.href = json.dataUrl;
           download.classList.remove('d-none');
         }
-
       } catch {
         output.textContent = 'Gagal memuat API.';
       } finally {

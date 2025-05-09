@@ -1,0 +1,33 @@
+{
+  "title": "Gemini Chat",
+  "description": "Berinteraksi dengan model Gemini 2.0 dari Google. Mendukung teks dan gambar.",
+  "method": "POST",
+  "path": "/api/gemini",
+  "placeholder": "Masukkan pertanyaan...",
+  "fields": [
+    {
+      "name": "prompt",
+      "type": "text",
+      "required": false,
+      "label": "Prompt"
+    },
+    {
+      "name": "session",
+      "type": "text",
+      "required": false,
+      "label": "Session ID (opsional)"
+    },
+    {
+      "name": "image",
+      "type": "file",
+      "required": false,
+      "accept": "image/*",
+      "label": "Upload Gambar (opsional)"
+    }
+  ],
+  "response": {
+    "success": true,
+    "response": "Ini adalah respons dari Gemini berdasarkan prompt dan/atau gambar.",
+    "session": "d3087e60-4019-4dd3-b2d2-3ccad1c22b15"
+  }
+}
