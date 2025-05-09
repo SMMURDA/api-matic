@@ -2,13 +2,15 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 
+// Import semua route
 const whoisRoute = require('./public/routes/whois');
 const embedRoute = require('./public/routes/embed');
 const shortenRoute = require('./public/routes/shorten');
 const randomUserRoute = require('./public/routes/randomUser');
 const ipLocatorRoute = require('./public/routes/iplocator');
 const docParserRoute = require('./public/routes/docparser');
-const qrCodeRoute = require('./public/routes/qrcode'); // ganti dari qrcodereader ke qrcode
+const qrCodeRoute = require('./public/routes/qrcode');
+const deepseekRoute = require('./public/routes/deepseek'); // <- Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,7 +26,8 @@ app.use('/api/shorten', shortenRoute);
 app.use('/api/randomuser', randomUserRoute);
 app.use('/api/iplocator', ipLocatorRoute);
 app.use('/api/docparser', docParserRoute);
-app.use('/api/qrcode', qrCodeRoute); // rute qr code baru
+app.use('/api/qrcode', qrCodeRoute);
+app.use('/api/deepseek', deepseekRoute); // <- Tambahkan ini
 
 // Home
 app.get('/', (req, res) => {

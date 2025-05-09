@@ -58,6 +58,7 @@
         <option value="iplocator">/api/iplocator</option>
         <option value="docparser">/api/docparser</option>
         <option value="qrcode">/api/qrcode</option>
+        <option value="deepseek">/api/deepseek</option>
       </select>
     </div>
     <div id="doc"></div>
@@ -75,8 +76,13 @@
         let inputField = '';
         if (name === 'docparser') {
           inputField = `<input type="file" class="form-control" id="input-${name}" accept=".pdf,.doc,.docx">`;
-        } else if (['randomuser'].includes(name)) {
-          inputField = ''; // Tidak perlu input
+        } else if (name === 'randomuser') {
+          inputField = '';
+        } else if (name === 'deepseek') {
+          inputField = `
+            <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
+            <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
+          `;
         } else {
           inputField = `<input type="text" class="form-control" id="input-${name}" placeholder="${data.placeholder || 'Teks / URL'}">`;
         }
@@ -146,6 +152,24 @@
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
+        } else if (name === 'deepseek') {
+          const prompt = input?.value.trim();
+          const sessionInput = document.getElementById(`session-${name}`);
+          const session = sessionInput?.value.trim();
+
+          if (!prompt) {
+            output.textContent = 'Masukkan prompt.';
+            return;
+          }
+
+          const body = { prompt };
+          if (session) body.session = session;
+
+          res = await fetch(`/api/${name}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
         } else {
           const value = input?.value.trim();
           if (!value) {

@@ -1,0 +1,11 @@
+{
+  "title": "DeepSeek AI",
+  "description": "Menghasilkan respons dari LLM DeepSeek Chat dengan parameter prompt dan session (opsional).",
+  "method": "POST",
+  "path": "/api/deepseek",
+  "placeholder": "Tulis pertanyaan atau perintah...",
+  "response": {
+    "response": "Ini adalah jawaban dari model.",
+    "session": "cltxy5m1d0001mr0f45fovk0z"
+  }
+}
