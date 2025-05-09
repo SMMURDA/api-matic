@@ -1,3 +1,4 @@
+<!-- Versi lengkap, termasuk Microsoft -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -21,7 +22,7 @@
       <small class="text-muted">Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT</a></small>
     </div>
     <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
-      <a href="https://wa.me/6285179612320" class="contact-link"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+      <a href="https://github.com/SMMURDA" class="contact-link"><i class="bi bi-github"></i> Github</a>
       <a href="mailto:ask@topup.eu.org" class="contact-link"><i class="bi bi-envelope"></i> Email</a>
       <a href="https://instagram.com/bovalonee" class="contact-link"><i class="bi bi-instagram"></i> Instagram</a>
       <div class="form-check form-switch dark-toggle">
@@ -44,6 +45,8 @@
         <option value="qrcode">/api/qrcode</option>
         <option value="deepseek">/api/deepseek</option>
         <option value="gemini">/api/gemini</option>
+        <option value="llama">/api/llama</option>
+        <option value="microsoft">/api/microsoft</option>
       </select>
     </div>
     <div id="doc"></div>
@@ -63,7 +66,7 @@
           inputField = `<input type="file" class="form-control" id="input-${name}" accept=".pdf,.doc,.docx">`;
         } else if (name === 'randomuser') {
           inputField = '';
-        } else if (name === 'deepseek') {
+        } else if (['deepseek', 'llama', 'microsoft'].includes(name)) {
           inputField = `
             <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
             <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
@@ -140,7 +143,7 @@
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
-        } else if (name === 'deepseek') {
+        } else if (['deepseek', 'llama', 'microsoft'].includes(name)) {
           const prompt = input?.value.trim();
           const sessionInput = document.getElementById(`session-${name}`);
           const session = sessionInput?.value.trim();

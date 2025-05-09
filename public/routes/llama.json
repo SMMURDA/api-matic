@@ -1,0 +1,11 @@
+{
+  "title": "Meta LLaMA 4 Maverick",
+  "description": "Mengirim prompt ke model LLaMA 4 Maverick (via OpenRouter). Dapat menggunakan sesi opsional.",
+  "method": "POST",
+  "path": "/api/llama",
+  "placeholder": "Apa itu kecerdasan buatan?",
+  "response": {
+    "session": "default",
+    "response": "Kecerdasan buatan adalah bidang ilmu komputer yang berfokus pada pembuatan sistem yang dapat melakukan tugas yang biasanya memerlukan kecerdasan manusia."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Microsoft Copilot API",
+  "description": "MAI-DS-R1 is a post-trained variant of DeepSeek-R1 developed by the Microsoft AI team to improve the model’s responsiveness on previously blocked topics while enhancing its safety profile.",
+  "method": "POST",
+  "path": "/api/microsoft",
+  "placeholder": "Masukkan prompt untuk Copilot",
+  "response": {
+    "success": true,
+    "response": "Ini adalah hasil dari model Copilot Microsoft."
+  }
+}

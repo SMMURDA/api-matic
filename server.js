@@ -11,7 +11,9 @@ const ipLocatorRoute = require('./public/routes/iplocator');
 const docParserRoute = require('./public/routes/docparser');
 const qrCodeRoute = require('./public/routes/qrcode');
 const deepseekRoute = require('./public/routes/deepseek');
-const geminiRoute = require('./public/routes/gemini'); // <- Tambahkan ini
+const geminiRoute = require('./public/routes/gemini');
+const llamaRoute = require('./public/routes/llama');
+const microsoftRoute = require('./public/routes/microsoft'); // <- Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +32,9 @@ app.use('/api/iplocator', ipLocatorRoute);
 app.use('/api/docparser', docParserRoute);
 app.use('/api/qrcode', qrCodeRoute);
 app.use('/api/deepseek', deepseekRoute);
-app.use('/api/gemini', geminiRoute); // <- Rute Gemini
+app.use('/api/gemini', geminiRoute);
+app.use('/api/llama', llamaRoute);
+app.use('/api/microsoft', microsoftRoute); // <- Rute Microsoft
 
 // Home
 app.get('/', (req, res) => {
