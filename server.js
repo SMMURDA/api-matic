@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 // Import semua route
 const whoisRoute = require('./public/routes/whois');
@@ -13,16 +14,19 @@ const qrCodeRoute = require('./public/routes/qrcode');
 const deepseekRoute = require('./public/routes/deepseek');
 const geminiRoute = require('./public/routes/gemini');
 const llamaRoute = require('./public/routes/llama');
-const microsoftRoute = require('./public/routes/microsoft'); // <- Tambahkan ini
-const nvidiaRoute = require('./public/routes/nvidia'); // <- Tambahkan ini
+const microsoftRoute = require('./public/routes/microsoft');
+const nvidiaRoute = require('./public/routes/nvidia');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'] // Tambahkan ini agar bisa akses /status sebagai /status.html
+}));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // untuk form data
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // API routes
 app.use('/api/whois', whoisRoute);
@@ -35,8 +39,8 @@ app.use('/api/qrcode', qrCodeRoute);
 app.use('/api/deepseek', deepseekRoute);
 app.use('/api/gemini', geminiRoute);
 app.use('/api/llama', llamaRoute);
-app.use('/api/microsoft', microsoftRoute); // <- Rute Microsoft
-app.use('/api/nvidia', nvidiaRoute); // <- Rute Nvidia
+app.use('/api/microsoft', microsoftRoute);
+app.use('/api/nvidia', nvidiaRoute);
 
 // Home
 app.get('/', (req, res) => {

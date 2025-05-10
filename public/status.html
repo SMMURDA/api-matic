@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Status Matic</title>
+  <link rel="stylesheet" href="status.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>API Status Dashboard</h1>
+      <p class="subtitle">Live monitoring for Matic API</p>
+    </header>
+
+    <div class="endpoint-selector">
+      <label>Select API Endpoint:</label>
+      <div id="apiList" class="api-list">
+        <button data-endpoint="/api/gemini">Gemini</button>
+        <button data-endpoint="/api/deepseek">DeepSeek</button>
+        <button data-endpoint="/api/llama">LLaMA</button>
+        <button data-endpoint="/api/microsoft">Microsoft</button>
+        <button data-endpoint="/api/nvidia">NVIDIA</button>
+        <button data-endpoint="/api/qrcode">QRCode</button>
+        <button data-endpoint="/api/docparser">DocParser</button>
+        <button data-endpoint="/api/embed">Embed</button>
+        <button data-endpoint="/api/whois">Whois</button>
+        <button data-endpoint="/api/shorten">Shorten</button>
+        <button data-endpoint="/api/iplocator">IP Locator</button>
+      </div>
+    </div>
+
+    <div class="status-card" id="statusCard" style="margin-top: 20px;">
+      <div class="status-header">
+        <h2 class="status-title">API Status</h2>
+        <div class="status-indicator" id="apiStatus">●</div>
+      </div>
+      <div class="status-body">
+        <div class="info-item">
+          <div class="info-label">Endpoint</div>
+          <div class="info-value" id="endpointDisplay">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Response Time</div>
+          <div class="info-value" id="responseTime">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Uptime</div>
+          <div class="info-value" id="uptimePercentage">—</div>
+          <div class="uptime-bar"><div class="uptime-progress" id="uptimeProgressBar"></div></div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Last Checked</div>
+          <div class="info-value" id="lastChecked">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="refresh-section">
+      <button class="refresh-button" id="refreshButton">Refresh Status</button>
+      <div class="last-updated" id="lastUpdated">Last updated: —</div>
+    </div>
+
+    <div class="server-metrics">
+      <h3 class="metrics-title">Server Metrics</h3>
+      <div class="metric-cards">
+        <div class="metric-card">
+          <div class="metric-value" id="totalRequests">0</div>
+          <div class="metric-label">Total Requests Today</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="averageResponseTime">0ms</div>
+          <div class="metric-label">Avg Response Time</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="uptimeDays">0</div>
+          <div class="metric-label">Days Up</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value" id="successRate">0%</div>
+          <div class="metric-label">Success Rate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="incident-history">
+      <h3 class="history-title">Incident History</h3>
+      <div class="incident-list" id="incidentList"></div>
+    </div>
+
+    <footer>
+      <p>© 2025 Matic API <span class="heartbeat">♥</span></p>
+    </footer>
+  </div>
+
+  <!-- Scroll to top button -->
+  <button id="scrollToTopBtn" title="Go to top">↑</button>
+
+  <script>
+    const CHECK_INTERVAL = 60000;
+    const baseUrl = 'https://matic.eu.org';
+    let selectedEndpoint = '';
+    let startupTime = new Date();
+    let apiChecks = [];
+    let incidents = [];
+    let totalRequests = 0;
+    let successfulRequests = 0;
+
+    const apiListEl = document.getElementById('apiList');
+    const apiStatusEl = document.getElementById('apiStatus');
+    const endpointDisplayEl = document.getElementById('endpointDisplay');
+    const responseTimeEl = document.getElementById('responseTime');
+    const uptimePercentageEl = document.getElementById('uptimePercentage');
+    const uptimeProgressBarEl = document.getElementById('uptimeProgressBar');
+    const lastCheckedEl = document.getElementById('lastChecked');
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    const totalRequestsEl = document.getElementById('totalRequests');
+    const averageResponseTimeEl = document.getElementById('averageResponseTime');
+    const uptimeDaysEl = document.getElementById('uptimeDays');
+    const successRateEl = document.getElementById('successRate');
+    const incidentListEl = document.getElementById('incidentList');
+    const refreshButtonEl = document.getElementById('refreshButton');
+
+    apiListEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-endpoint]');
+      if (!btn) return;
+
+      apiListEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      selectedEndpoint = btn.getAttribute('data-endpoint');
+      resetStats();
+      renderIncidentList();
+      checkApiStatus();
+      document.getElementById('statusCard').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    refreshButtonEl.addEventListener('click', checkApiStatus);
+
+    function resetStats() {
+      apiChecks = [];
+      incidents = [];
+      totalRequests = 0;
+      successfulRequests = 0;
+    }
+
+    function renderIncidentList() {
+      incidentListEl.innerHTML = '';
+      incidents.forEach(inc => {
+        const d = document.createElement('div');
+        d.className = 'incident-item';
+        d.innerHTML = `
+          <div class="incident-description">${inc.description}</div>
+          <div class="incident-timestamp">
+            ${inc.startTime.toLocaleString()} - 
+            ${inc.resolved ? inc.endTime.toLocaleString() : 'Still ongoing'}
+          </div>
+          ${inc.resolved ? `<div class="incident-duration">Duration: ${inc.duration}s</div>` : ''}
+        `;
+        incidentListEl.appendChild(d);
+      });
+    }
+
+    async function checkApiStatus() {
+      if (!selectedEndpoint) return;
+      apiStatusEl.textContent = '● Checking...';
+      apiStatusEl.className = 'status-indicator';
+
+      const url = baseUrl + selectedEndpoint;
+      endpointDisplayEl.textContent = selectedEndpoint;
+      const start = performance.now();
+      let isOnline = false, responseTime = 0;
+
+      try {
+        let res;
+        const GET_METHODS = ['/api/embed', '/api/randomuser', '/api/shorten', '/api/whois', '/api/iplocator'];
+
+        if (selectedEndpoint === '/api/docparser') {
+          const formData = new FormData();
+          const blob = new Blob(['Hello, this is a test file'], { type: 'text/plain' });
+          formData.append('file', blob, 'test.txt');
+          res = await fetch(url, { method: 'POST', body: formData });
+        } else if (selectedEndpoint === '/api/qrcode') {
+          res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: 'https://matic.eu.org' })
+          });
+        } else if (GET_METHODS.includes(selectedEndpoint)) {
+          const testUrl = selectedEndpoint.includes('iplocator') ? '?ip=1.1.1.1' : '?url=https://google.com';
+          res = await fetch(url + testUrl);
+        } else {
+          res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: 'Status Check' })
+          });
+        }
+
+        responseTime = Math.round(performance.now() - start);
+        isOnline = res.ok;
+        totalRequests++;
+        if (isOnline) successfulRequests++;
+
+        apiChecks.push({ timestamp: new Date(), isOnline, responseTime });
+        if (apiChecks.length > 1000) apiChecks.shift();
+        handleIncidents(isOnline);
+      } catch {
+        responseTime = Math.round(performance.now() - start);
+        isOnline = false;
+        apiChecks.push({ timestamp: new Date(), isOnline, responseTime });
+        handleIncidents(isOnline);
+      }
+
+      updateUI(isOnline, responseTime);
+    }
+
+    function handleIncidents(isOnline) {
+      if (apiChecks.length < 3) return;
+      const last = incidents[incidents.length - 1];
+      const last3 = apiChecks.slice(-3);
+
+      if (!isOnline && (!last || last.resolved)) {
+        if (last3.every(c => !c.isOnline)) {
+          incidents.push({ startTime: new Date(), resolved: false, description: 'Downtime detected' });
+        }
+      } else if (isOnline && last && !last.resolved) {
+        if (last3.every(c => c.isOnline)) {
+          last.resolved = true;
+          last.endTime = new Date();
+          last.duration = Math.round((last.endTime - last.startTime) / 1000);
+        }
+      }
+    }
+
+    function updateUI(isOnline, rt) {
+      apiStatusEl.textContent = `● ${isOnline ? 'Online' : 'Offline'}`;
+      apiStatusEl.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+      responseTimeEl.textContent = `${rt}ms`;
+
+      const onlineCount = apiChecks.filter(c=>c.isOnline).length;
+      const upPct = apiChecks.length ? ((onlineCount/apiChecks.length)*100).toFixed(1) : '100.0';
+      uptimePercentageEl.textContent = `${upPct}%`;
+      uptimeProgressBarEl.style.width = `${upPct}%`;
+
+      lastCheckedEl.textContent = new Date().toLocaleTimeString();
+      lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
+
+      totalRequestsEl.textContent = totalRequests;
+      const avg = apiChecks.length ? Math.round(apiChecks.reduce((s,c)=>s+c.responseTime,0)/apiChecks.length) : 0;
+      averageResponseTimeEl.textContent = `${avg}ms`;
+
+      const days = Math.floor((new Date() - startupTime)/(1000*60*60*24));
+      uptimeDaysEl.textContent = days;
+      const sr = totalRequests ? Math.round((successfulRequests/totalRequests)*100) : 0;
+      successRateEl.textContent = `${sr}%`;
+
+      renderIncidentList();
+    }
+
+    // Scroll to top button functionality
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+
+    window.onscroll = () => {
+      scrollBtn.style.display = (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200)
+        ? 'block'
+        : 'none';
+    };
+
+    scrollBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    document.querySelector('#apiList button').click();
+    setInterval(checkApiStatus, CHECK_INTERVAL);
+  </script>
+</body>
+</html>

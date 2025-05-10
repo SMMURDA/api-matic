@@ -1,0 +1,33 @@
+{
+  "title": "Random User Generator",
+  "description": "Generates random user data such as name, email, address, and avatar.",
+  "method": "GET",
+  "path": "/api/randomuser",
+  "placeholder": "No input required",
+  "response": {
+    "success": true,
+    "user": {
+      "id": "c1f66a55-7e9c-4a68-8f0b-89df9f72c345",
+      "name": "Rina Setiawan",
+      "gender": "female",
+      "email": "rina.setiawan@example.com",
+      "username": "rina_swn",
+      "phone": "+62 812-3456-7890",
+      "birthdate": "1992-04-18T00:00:00.000Z",
+      "address": {
+        "street": "Jl. Mawar No. 5",
+        "city": "Bandung",
+        "state": "Jawa Barat",
+        "country": "Indonesia",
+        "zip": "40123"
+      },
+      "avatar": "https://cdn.fakercloud.com/avatars/ladylexy_128.jpg",
+      "job": {
+        "title": "UI/UX Designer",
+        "type": "Full-time"
+      },
+      "website": "https://example.com"
+    }
+  },
+  "curl": "curl https://matic.eu.org/api/randomuser"
+}
