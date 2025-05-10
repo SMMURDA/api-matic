@@ -14,34 +14,40 @@
 
 Simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, IP geolocation, and generating fake user data.
 
+---
+
 #### Endpoints
 
-| Endpoint           | Method | Description                                       | Example Usage                                                                 |
-|--------------------|--------|---------------------------------------------------|--------------------------------------------------------------------------------|
-| `/api/embed`       | GET    | Extract video metadata from supported sites       | `/api/embed?url=https://www.p*rnh*b.com/view_video.php?viewkey=ph5e3c2f8d9148d` |
-| `/api/whois`       | GET    | Fetch WHOIS information for a domain              | `/api/whois?url=https://example.com`                                          |
-| `/api/shorten`     | GET    | Shorten a long URL using Bitly                    | `/api/shorten?url=https://example.com`                                        |
-| `/api/randomuser`  | GET    | Generate a random fake user profile               | `/api/randomuser`                                                             |
-| `/api/iplocator`   | GET    | Get detailed geolocation info from an IP address  | `/api/iplocator?ip=8.8.8.8`                                                   |
-| `/api/docparser`   | POST   | Extract text from uploaded files (supports OCR)   | `/api/docparser` (Upload PDF, DOCX, JPG, PNG files)                           |
-| `/api/qrcode`      | POST   | Generate a QR code from provided data             | `/api/qrcode` (Input text/linked)             |
+- **`GET /api/embed`**
+- **`GET /api/whois`**
+- **`GET /api/shorten`**
+- **`GET /api/randomuser`**
+- **`GET /api/iplocator`**
+- **`POST /api/docparser`**
+- **`POST /api/qrcode`**
+- **`POST /api/deepseek`**
+- **`POST /api/gemini`**
+- **`POST /api/llama`**
+- **`POST /api/microsoft`**
+- **`POST /api/nvidia`**
+
 ---
 #### Pull Docker Image
 
 ```bash
-docker pull smmurda/matic-api
+docker pull smmurda/matic-api:latest
 ```
 
 #### Run Container
 
 ```bash
-docker run -d -p 3000:3000 --name matic-api smmurda/matic-api
+docker run -d smmurda/matic-api:latest
 ```
 ---
 #### Notes
 
 - Bitly shortening requires API key configuration in `.env`
-- Video embedding supports limited domains:
+- Video embedding (puppeteer) supports limited domains like:
   - `*videos.com, xn*x.com & p*rnh*b.com`
 - Ensure all URLs or IPs are valid and publicly accessible
 - Files & OCR in /api/docparser supports
