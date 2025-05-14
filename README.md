@@ -52,3 +52,4 @@ docker run -d smmurda/matic-api:latest
 - Ensure all URLs or IPs are valid and publicly accessible
 - Files & OCR in /api/docparser supports
   - `.jpeg, .png, .jpeg .pdf, .docx, .json, .html, .md, & csv`
+- Last update for frontend checking api its have bug 'day up' & 'total req today'. you can update(create) 'database' for solve this bug
