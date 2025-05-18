@@ -41,7 +41,7 @@ docker pull smmurda/matic-api:latest
 #### Run Container
 
 ```bash
-docker run -d smmurda/matic-api:latest
+docker run -d -p 3000:3000 --name matic-api smmurda/matic-api:latest
 ```
 ---
 #### Notes
