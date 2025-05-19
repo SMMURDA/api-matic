@@ -1,0 +1,18 @@
+{
+  "title": "SSL Analyzer",
+  "description": "Analyze SSL/TLS certificate of any domain. Returns information such as validity, expiration date, issuer, subject, and protocol version.",
+  "method": "GET",
+  "path": "/api/ssl?host=example.com",
+  "placeholder": "Enter a domain name (e.g., google.com)",
+  "response": {
+    "host": "example.com",
+    "valid": true,
+    "subject": "CN=example.com",
+    "issuer": "Let's Encrypt",
+    "valid_from": "2025-04-15T12:00:00Z",
+    "valid_to": "2025-07-14T12:00:00Z",
+    "days_remaining": 56,
+    "protocol": "TLSv1.3"
+  },
+  "curl": "curl \"https://matic.eu.org/api/ssl?host=example.com\""
+}

@@ -16,6 +16,7 @@ const geminiRoute = require('./public/routes/gemini');
 const llamaRoute = require('./public/routes/llama');
 const microsoftRoute = require('./public/routes/microsoft');
 const nvidiaRoute = require('./public/routes/nvidia');
+const sslRoute = require('./public/routes/ssl'); // <== Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,7 +24,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public'), {
-  extensions: ['html'] // Tambahkan ini agar bisa akses /status sebagai /status.html
+  extensions: ['html']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,6 +42,7 @@ app.use('/api/gemini', geminiRoute);
 app.use('/api/llama', llamaRoute);
 app.use('/api/microsoft', microsoftRoute);
 app.use('/api/nvidia', nvidiaRoute);
+app.use('/api/ssl', sslRoute); // <== Tambahkan ini
 
 // Home
 app.get('/', (req, res) => {
@@ -48,5 +50,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
+  console.log(`Server berjalan di https://localhost:${PORT}`);
 });
