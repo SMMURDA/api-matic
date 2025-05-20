@@ -32,6 +32,7 @@ Simple public API collection for tasks like video embedding, domain WHOIS lookup
 - **`POST /api/nvidia`**
 - **`POST /api/ssl`**
 - **`POST /api/metadata`**
+- **`POST /api/dns`**
 
 ---
 #### Pull Docker Image
