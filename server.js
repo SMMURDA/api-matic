@@ -16,7 +16,8 @@ const geminiRoute = require('./public/routes/gemini');
 const llamaRoute = require('./public/routes/llama');
 const microsoftRoute = require('./public/routes/microsoft');
 const nvidiaRoute = require('./public/routes/nvidia');
-const sslRoute = require('./public/routes/ssl'); // <== Tambahkan ini
+const sslRoute = require('./public/routes/ssl');
+const metadataRoute = require('./public/routes/metadata'); // <== Tambahkan import route metadata
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,7 +43,8 @@ app.use('/api/gemini', geminiRoute);
 app.use('/api/llama', llamaRoute);
 app.use('/api/microsoft', microsoftRoute);
 app.use('/api/nvidia', nvidiaRoute);
-app.use('/api/ssl', sslRoute); // <== Tambahkan ini
+app.use('/api/ssl', sslRoute);
+app.use('/api/metadata', metadataRoute); // <== Tambahkan route metadata di sini
 
 // Home
 app.get('/', (req, res) => {

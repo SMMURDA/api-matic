@@ -1,0 +1,36 @@
+{
+  "title": "Metadata Extractor",
+  "description": "Ekstrak metadata dari file gambar (JPG, JPEG, PNG) dan dokumen PDF. Mengembalikan informasi seperti dimensi gambar, EXIF data, lokasi GPS, dan informasi dokumen seperti judul, penulis, jumlah halaman, serta checksum SHA256.",
+  "method": "POST",
+  "path": "/api/metadata",
+  "placeholder": "Upload file: JPG, JPEG, PNG, PDF",
+  "response": {
+    "Checksum": "3f4e1cb8a97a6e8ecb182d0d2fcf2d7545e16e7b23cd9ff305f2a4fa867102af",
+    "Filename": "sample.jpg",
+    "Filesize": "520.15 kB",
+    "Filetype": "JPEG",
+    "Filetypeextension": "jpg",
+    "Mimetype": "image/jpeg",
+    "Exifbyteorder": "II",
+    "Orientation": 1,
+    "Jfifversion": "1.01",
+    "Resolutionunit": 2,
+    "Xresolution": 72,
+    "Yresolution": 72,
+    "Imagewidth": 1920,
+    "Imageheight": 1080,
+    "Encodingprocess": "Baseline DCT, Huffman coding",
+    "Bitspersample": 8,
+    "Colorcomponents": 3,
+    "Ycbcrsubsampling": "YCbCr4:2:0",
+    "Imagesize": "1920x1080",
+    "Megapixels": "2.1",
+    "Category": "image",
+    "Location": {
+      "latitude": -6.1754,
+      "longitude": 106.8272
+    },
+    "DateTimeOriginal": "2024:11:12 14:33:21"
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/metadata \\\n  -F \"file=@/path/to/your/file.jpg\""
+}

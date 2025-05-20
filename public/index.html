@@ -6,14 +6,17 @@
   <title>Matic API Docs</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.css" rel="stylesheet" />
   <style>
     .dark-toggle { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
     .contact-link { text-decoration: none; color: var(--bs-body-color); transition: color 0.3s ease; }
     .contact-link:hover { color: var(--bs-link-hover-color, #0d6efd); }
     img.qrcode-preview { max-width: 200px; margin-top: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    pre[class*="language-"] { border-radius: 8px; padding: 1em; background: #2d2d2d; }
   </style>
 </head>
 <body>
+  <!-- Bagian Header -->
   <div class="container-fluid py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap">
     <div class="d-flex align-items-center gap-3">
       <h1 class="fw-bold m-0"><i class="bi bi-code-slash"></i> Matic API Docs</h1>
@@ -31,6 +34,7 @@
     </div>
   </div>
 
+  <!-- Konten -->
   <div class="container py-4">
     <div class="mb-4">
       <label for="endpointSelect" class="form-label fw-semibold">Pilih Endpoint:</label>
@@ -48,11 +52,13 @@
         <option value="microsoft">/api/microsoft</option>
         <option value="nvidia">/api/nvidia</option>
         <option value="ssl">/api/ssl</option>
+        <option value="metadata">/api/metadata</option>
       </select>
     </div>
     <div id="doc"></div>
   </div>
 
+  <!-- Script Utama -->
   <script>
     async function loadEndpoint() {
       const name = document.getElementById('endpointSelect').value;
@@ -63,8 +69,8 @@
         const data = await res.json();
 
         let inputField = '';
-        if (name === 'docparser') {
-          inputField = `<input type="file" class="form-control" id="input-${name}" accept=".pdf,.doc,.docx">`;
+        if (name === 'docparser' || name === 'metadata') {
+  inputField = `<input type="file" class="form-control" id="input-${name}" accept="*/*">`;
         } else if (name === 'randomuser') {
           inputField = '';
         } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
@@ -106,19 +112,21 @@
               <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
               <a class="btn btn-outline-success btn-sm d-none" id="download-${name}" download><i class="bi bi-download"></i> Unduh</a>
             </div>
-            <pre id="output-${name}"></pre>
+            <pre><code id="output-${name}" class="language-json"></code></pre>
             <img id="image-${name}" class="qrcode-preview d-none" />
 
             <h6 class="fw-semibold mt-4">Example Respons:</h6>
-            <pre>${JSON.stringify(data.response, null, 2)}</pre>
+            <pre><code class="language-json">${JSON.stringify(data.response, null, 2)}</code></pre>
 
             <h6 class="fw-semibold mt-4">Example Curl:</h6>
             <div class="d-flex gap-2 mb-2">
               <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
             </div>
-            <pre id="curl-${name}"><code>${data.curl || 'Tidak tersedia'}</code></pre>
+            <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
           </div>
         `;
+
+        Prism.highlightAll();
       } catch {
         doc.innerHTML = '<div class="alert alert-danger">Gagal memuat dokumentasi endpoint.</div>';
       }
@@ -142,12 +150,12 @@
       try {
         let res, json;
 
-        if (name === 'docparser') {
-          const file = input?.files?.[0];
-          if (!file) return output.textContent = 'Pilih file terlebih dahulu.';
-          const formData = new FormData();
-          formData.append('file', file);
-          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
+        if (name === 'docparser' || name === 'metadata') {
+  const file = input?.files?.[0];
+  if (!file) return output.textContent = 'Pilih file terlebih dahulu.';
+  const formData = new FormData();
+  formData.append('file', file);
+  res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
         } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
@@ -178,7 +186,8 @@
           const value = input?.value.trim();
           if (!value) return output.textContent = 'Masukkan input.';
           const body = name === 'qrcode' ? JSON.stringify({ text: value }) : null;
-          let paramKey = 'url'; if (name === 'iplocator') paramKey = 'ip'; if (name === 'ssl') paramKey = 'host';  res = await fetch(`/api/${name}?${paramKey}=${encodeURIComponent(value)}`, {
+          let paramKey = 'url'; if (name === 'iplocator') paramKey = 'ip'; if (name === 'ssl') paramKey = 'host';
+          res = await fetch(`/api/${name}?${paramKey}=${encodeURIComponent(value)}`, {
             method: name === 'qrcode' ? 'POST' : 'GET',
             headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
             body
@@ -189,6 +198,7 @@
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
         output.textContent = JSON.stringify(json, null, 2);
+        Prism.highlightElement(output);
 
         if (name === 'qrcode' && json.dataUrl) {
           image.src = json.dataUrl;
@@ -198,6 +208,7 @@
         }
       } catch {
         output.textContent = 'Gagal memuat API.';
+        Prism.highlightElement(output);
       } finally {
         loading.classList.add('d-none');
       }
@@ -220,7 +231,10 @@
     });
   </script>
 
+  <!-- Script eksternal -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
 </body>
 </html>
-
