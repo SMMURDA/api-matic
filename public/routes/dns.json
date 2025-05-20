@@ -1,0 +1,36 @@
+{
+  "title": "DNS Lookup & Propagation",
+  "description": "Performs DNS lookup and propagation check across multiple RR types (A, AAAA, MX, CNAME, NS, TXT, SOA, SRV, PTR, CAA, DS, DNSKEY, TLSA, HTTPS, SVCB) using both local and Google DNS resolvers. Includes DNSSEC flags and detailed record breakdown.",
+  "method": "GET",
+  "path": "/api/dns",
+  "placeholder": "Enter a domain name (e.g., example.com)",
+  "params": {
+    "domain": "Required. The domain name to lookup (e.g., example.com)."
+  },
+  "response": {
+    "domain": "example.com",
+    "dns_flags": {
+      "status": 0,
+      "tc": false,
+      "rd": true,
+      "ra": true,
+      "ad": false,
+      "cd": false
+    },
+    "records": {
+      "A": {
+        "type": "A",
+        "local": ["93.184.216.34"],
+        "google": [
+          {
+            "name": "example.com.",
+            "type": "A",
+            "TTL": 21599,
+            "data": "93.184.216.34"
+          }
+        ]
+      }
+    }
+  },
+  "curl": "curl \"https://matic.eu.org/api/dns?domain=example.com\""
+}

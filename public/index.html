@@ -53,6 +53,7 @@
         <option value="nvidia">/api/nvidia</option>
         <option value="ssl">/api/ssl</option>
         <option value="metadata">/api/metadata</option>
+        <option value="dns">/api/dns</option>
       </select>
     </div>
     <div id="doc"></div>
@@ -186,7 +187,7 @@
           const value = input?.value.trim();
           if (!value) return output.textContent = 'Masukkan input.';
           const body = name === 'qrcode' ? JSON.stringify({ text: value }) : null;
-          let paramKey = 'url'; if (name === 'iplocator') paramKey = 'ip'; if (name === 'ssl') paramKey = 'host';
+          let paramKey = 'url'; if (name === 'iplocator') paramKey = 'ip'; else if (name === 'ssl') paramKey = 'host'; else if (name === 'dns') paramKey = 'domain';
           res = await fetch(`/api/${name}?${paramKey}=${encodeURIComponent(value)}`, {
             method: name === 'qrcode' ? 'POST' : 'GET',
             headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
@@ -238,3 +239,4 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
 </body>
 </html>
+
