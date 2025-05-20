@@ -12,7 +12,7 @@
 
 ---
 
-Simple public API collection for tasks like video embedding, domain WHOIS lookup, URL shortening, IP geolocation, and generating fake user data.
+Simple RESTful API with `TEST` on Frontend
 
 ---
 
