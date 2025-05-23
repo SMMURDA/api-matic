@@ -33,6 +33,7 @@ Simple RESTful API with `TEST` on Frontend
 - **`POST /api/ssl`**
 - **`POST /api/metadata`**
 - **`POST /api/dns`**
+- **`POST /api/translate`**
 
 ---
 #### Pull Docker Image
