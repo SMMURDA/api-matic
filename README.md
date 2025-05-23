@@ -32,7 +32,7 @@ Simple RESTful API with `TEST` on Frontend
 - **`POST /api/nvidia`**
 - **`POST /api/ssl`**
 - **`POST /api/metadata`**
-- **`POST /api/dns`**
+- **`GET /api/dns`**
 - **`POST /api/translate`**
 
 ---
