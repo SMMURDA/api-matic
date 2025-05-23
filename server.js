@@ -18,7 +18,8 @@ const microsoftRoute = require('./public/routes/microsoft');
 const nvidiaRoute = require('./public/routes/nvidia');
 const sslRoute = require('./public/routes/ssl');
 const metadataRoute = require('./public/routes/metadata');
-const dnsRoute = require('./public/routes/dns'); // <== Tambahkan DNS
+const dnsRoute = require('./public/routes/dns');
+const translateRoute = require('./public/routes/translate'); // <== Tambahkan Translate API di sini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,7 +47,8 @@ app.use('/api/microsoft', microsoftRoute);
 app.use('/api/nvidia', nvidiaRoute);
 app.use('/api/ssl', sslRoute);
 app.use('/api/metadata', metadataRoute);
-app.use('/api/dns', dnsRoute); // <== Daftarkan DNS route di sini
+app.use('/api/dns', dnsRoute);
+app.use('/api/translate', translateRoute); // <== Daftarkan Translate route di sini
 
 // Home
 app.get('/', (req, res) => {
@@ -56,3 +58,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server berjalan di http://localhost:${PORT}`);
 });
+

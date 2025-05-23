@@ -1,0 +1,25 @@
+{
+  "title": "Matic Translate",
+  "description": "Menerjemahkan teks dari satu bahasa ke bahasa lain, daftar lengkap bahasa yang didukung dari endpoint /api/translate/supported-languages",
+  "method": "POST",
+  "path": "/api/translate",
+  "request_body": {
+    "text": "string (Teks yang akan diterjemahkan)",
+    "sourceLang": "string (Kode bahasa sumber, misal: 'id', 'fr', 'es')",
+    "targetLang": "string (Kode bahasa tujuan, misal: 'en-US', 'en-GB', 'id', 'es')"
+  },
+  "example_request_body": {
+    "text": "Halo dunia! Apa kabar?",
+    "sourceLang": "id",
+    "targetLang": "en-US"
+  },
+  "response": {
+    "success": true,
+    "originalText": "Halo dunia! Apa kabar?",
+    "translatedText": "Hello world! How are you?",
+    "detectedSourceLang": "id",
+    "targetLang": "en-US"
+  },
+  "curl": "curl -X POST https://matic.eu.org/api/translate \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"text\": \"Halo dunia! Apa kabar?\", \"sourceLang\": \"id\", \"targetLang\": \"en-US\"}'"
+}
+

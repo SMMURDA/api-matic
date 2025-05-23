@@ -1,5 +1,5 @@
 {
-  "title": "Random User Generator",
+  "title": "Fake Data",
   "description": "Generates random user data such as name, email, address, and avatar.",
   "method": "GET",
   "path": "/api/randomuser",
@@ -31,3 +31,4 @@
   },
   "curl": "curl https://matic.eu.org/api/randomuser"
 }
+

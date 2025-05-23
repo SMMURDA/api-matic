@@ -1,5 +1,5 @@
 {
-  "title": "/api/embed",
+  "title": "Embed Video",
   "description": "Find video sources from a web page.",
   "method": "GET",
   "path": "/api/embed?url=https://example.com",
@@ -18,3 +18,4 @@
   },
   "curl": "curl 'https://matic.eu.org/api/embed?url=https://example.com'"
 }
+
