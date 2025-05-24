@@ -2,7 +2,7 @@
   "title": "Embed Video",
   "description": "Find video sources from a web page.",
   "method": "GET",
-  "path": "/api/embed?url=https://example.com",
+  "path": "/api/embed",
   "params": ["url"],
   "response": {
     "items": [

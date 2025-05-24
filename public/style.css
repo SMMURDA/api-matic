@@ -6,15 +6,14 @@
 }
 
 body {
-  font-family: 'Roboto', sans-serif; /* Menggunakan font Roboto seperti yang Anda inginkan */
+  font-family: 'Roboto', sans-serif;
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
   transition: background-color 0.3s, color 0.3s;
   padding-top: 1rem; /* Memberi sedikit padding dari header */
 }
 
-/* Header Styling - Menggunakan kelas Bootstrap yang sudah ada di HTML */
-/* .container-fluid.py-3.border-bottom.d-flex.align-items-center.justify-content-between.flex-wrap */
+/* Header Styling */
 .container-fluid.py-3.border-bottom h1 {
   font-size: 2rem;
   font-weight: bold;
@@ -56,22 +55,30 @@ pre[class*="language-"] {
   border-radius: 8px;
   padding: 1em;
   background: #2d2d2d;
-  overflow-x: auto; /* Memastikan kode yang panjang bisa discroll */
+  overflow-x: auto;
 }
 
-/* Accordion Specific Styles (from previous index.html) */
+/* Perbaikan untuk ASCII Art */
+pre#output-asciiart {
+  font-family: 'monospace', 'Courier New', Courier, sans-serif;
+  white-space: pre;
+  line-height: 1;
+  font-size: 0.8rem;
+}
+
+/* Accordion Specific Styles */
 .accordion-button:not(.collapsed) {
   background-color: var(--bs-primary-bg-subtle);
   color: var(--bs-primary-text-emphasis);
 }
 .accordion-header {
-  background-color: var(--bs-body-bg); /* Warna latar belakang header accordion */
+  background-color: var(--bs-body-bg);
 }
 .accordion-item {
   border: 1px solid var(--bs-border-color);
-  margin-bottom: 1rem; /* Spasi antar item accordion */
+  margin-bottom: 1rem;
   border-radius: 0.5rem;
-  overflow: hidden; /* Memastikan border-radius bekerja dengan baik */
+  overflow: hidden;
 }
 .accordion-body {
   padding: 1.5rem;
@@ -81,26 +88,26 @@ pre[class*="language-"] {
 .api-title-group {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Agar badge dan code tetap di kiri */
+  align-items: flex-start;
 }
 .api-title-group .api-path-line {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem; /* Spasi antara path dan title */
+  margin-bottom: 0.25rem;
 }
 
 /* Input & Form Control Styles */
 .form-select,
 .form-control,
-textarea.form-control { /* Tambahkan textarea juga */
+textarea.form-control {
   font-size: 1rem;
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid var(--bs-border-color);
   width: 100%;
-  background-color: var(--bs-body-bg); /* Agar sesuai tema */
-  color: var(--bs-body-color); /* Agar sesuai tema */
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
 }
 
 /* Generic H6 for sections */
@@ -116,38 +123,63 @@ h6 {
   border-width: 0.2em;
 }
 
-/* Button Overrides/Additions */
+/* === Button Styles - Softened Colors === */
+
+/* Primary Button */
 .btn-primary {
-  /* Bootstrap default primary color, adjust if needed for specific theme */
+  background-color: #6a994e; /* Hijau lembut */
+  color: white;
+  border: 1px solid #6a994e;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+.btn-primary:hover {
+  background-color: #58813a; /* Sedikit lebih gelap saat hover */
+  border-color: #58813a;
+  color: white;
+}
+
+/* Outline Secondary Button */
 .btn-outline-secondary {
   border: 1px solid var(--bs-border-color);
   color: var(--bs-body-color);
+  background-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .btn-outline-secondary:hover {
-  background-color: var(--bs-tertiary-bg);
-  color: var(--bs-body-color); /* Pastikan warna teks tetap terbaca */
+  background-color: var(--bs-tertiary-bg); /* Latar belakang hover yang lembut */
+  color: var(--bs-body-color); /* Teks tetap terbaca */
+  border-color: var(--bs-border-color);
 }
+
+/* Outline Success Button (for Download) */
 .btn-outline-success {
-  border: 1px solid #38a169;
-  color: #38a169;
+  border: 1px solid #7cb342; /* Hijau sukses yang lebih lembut */
+  color: #7cb342;
+  background-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .btn-outline-success:hover {
-  background-color: #f0fff4;
-  color: #38a169; /* Pastikan warna teks tetap terbaca */
+  background-color: #e6ffe6; /* Latar belakang hover yang sangat lembut */
+  color: #558b2f; /* Teks hijau yang lebih gelap saat hover */
+  border-color: #7cb342;
 }
+
+/* === End Button Styles === */
+
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .container-fluid.py-3.border-bottom { /* Target header */
+  .container-fluid.py-3.border-bottom {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  .container-fluid.py-3.border-bottom h1 { /* Target header h1 */
+  .container-fluid.py-3.border-bottom h1 {
     font-size: 1.5rem;
   }
-  /* Endpoint card/accordion body padding */
   .accordion-body {
     padding: 1rem;
   }
@@ -155,68 +187,70 @@ h6 {
 
 /* Dark Mode Specific Overrides */
 [data-bs-theme='dark'] {
-  --bs-body-bg: #121212;
-  --bs-body-color: #f8f9fa;
-  --bs-heading-color: #e0e0e0;
-  --bs-border-color: #333;
-  --bs-link-color: #bb86fc; /* Warna link untuk dark mode */
-  --bs-link-hover-color: #3700b3; /* Warna link hover untuk dark mode */
-  --bs-card-bg: #333; /* Latar belakang kartu/accordion item */
-  --bs-tertiary-bg: #1e1e1e; /* Latar belakang untuk pre/hover secondary btn */
-  --bs-secondary-bg: #444; /* Jika ada elemen secondary bg */
-
-  /* Override Bootstrap primary colors for dark mode buttons if desired */
-  --bs-primary-bg-subtle: #3700b3; /* Warna latar belakang accordion button saat aktif */
-  --bs-primary-text-emphasis: #bb86fc; /* Warna teks accordion button saat aktif */
+  --bs-body-bg: #1a1a2e; /* Latar belakang utama yang lebih dalam */
+  --bs-body-color: #e0e0e0; /* Warna teks terang */
+  --bs-heading-color: #f0f0f0; /* Warna heading terang */
+  --bs-border-color: #3e2060; /* Border yang lebih lembut */
+  --bs-link-color: #bb86fc; /* Link ungu terang */
+  --bs-link-hover-color: #8c52ff; /* Link ungu lebih terang saat hover */
+  --bs-card-bg: #2a2a4a; /* Latar belakang kartu/accordion item yang lebih gelap */
+  --bs-tertiary-bg: #3a3a5a; /* Latar belakang untuk pre/hover secondary btn */
+  --bs-primary-bg-subtle: #4a148c; /* Latar belakang accordion button saat aktif (ungu) */
+  --bs-primary-text-emphasis: #e0b0ff; /* Teks accordion button saat aktif */
 }
 
 [data-bs-theme='dark'] .contact-link {
-  color: #f8f9fa; /* Pastikan warna contact link tetap terlihat di dark mode */
+  color: #e0e0e0;
 }
 [data-bs-theme='dark'] .contact-link:hover {
   color: #bb86fc;
 }
 
+/* Dark Mode - Primary Button */
 [data-bs-theme='dark'] .btn-primary {
-  background-color: #bb86fc;
-  border-color: #bb86fc;
-  color: #121212; /* Teks gelap di tombol terang */
+  background-color: #8c52ff; /* Ungu terang */
+  border-color: #8c52ff;
+  color: #1a1a2e; /* Teks gelap di tombol terang */
 }
 [data-bs-theme='dark'] .btn-primary:hover {
-  background-color: #3700b3;
-  border-color: #3700b3;
-  color: #f8f9fa; /* Teks terang di tombol gelap */
+  background-color: #bb86fc; /* Ungu lebih cerah saat hover */
+  border-color: #bb86fc;
+  color: #1a1a2e;
 }
 
+/* Dark Mode - Outline Secondary Button */
 [data-bs-theme='dark'] .btn-outline-secondary {
-  color: #f8f9fa;
-  border-color: #f8f9fa;
+  border-color: #6a5acb; /* Border ungu lembut */
+  color: #e0e0e0;
 }
 [data-bs-theme='dark'] .btn-outline-secondary:hover {
-  background-color: #444;
-  color: #f8f9fa;
+  background-color: #3a3a5a; /* Latar belakang hover yang lebih gelap */
+  color: #e0e0e0;
+  border-color: #6a5acb;
 }
 
+/* Dark Mode - Outline Success Button */
 [data-bs-theme='dark'] .btn-outline-success {
-  color: #38a169;
-  border-color: #38a169;
+  border-color: #a2e0a2; /* Hijau terang */
+  color: #a2e0a2;
 }
 [data-bs-theme='dark'] .btn-outline-success:hover {
-  background-color: #1e1e1e; /* Latar belakang gelap */
-  color: #38a169;
+  background-color: #2a402a; /* Latar belakang hover hijau gelap */
+  color: #a2e0a2;
+  border-color: #a2e0a2;
 }
 
+/* Dark Mode - Form Controls */
 [data-bs-theme='dark'] .form-control,
 [data-bs-theme='dark'] textarea.form-control,
 [data-bs-theme='dark'] .form-select {
-  background-color: #1e1e1e;
-  border-color: #444;
-  color: #f8f9fa;
+  background-color: #2a2a4a; /* Latar belakang input yang lebih gelap */
+  border-color: #3e2060; /* Border input yang lebih lembut */
+  color: #e0e0e0;
 }
 [data-bs-theme='dark'] .form-control::placeholder,
 [data-bs-theme='dark'] textarea.form-control::placeholder {
-  color: #bbb; /* Warna placeholder di dark mode */
+  color: #c0c0c0;
   opacity: 0.7;
 }
-
 

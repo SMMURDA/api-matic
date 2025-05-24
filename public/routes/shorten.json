@@ -2,7 +2,7 @@
   "title": "URL Shortener",
   "description": "Shortens long URLs using Bitly.",
   "method": "GET",
-  "path": "/api/shorten?url=https://contoh.com",
+  "path": "/api/shorten",
   "placeholder": "https://contoh.com",
   "response": {
     "success": true,

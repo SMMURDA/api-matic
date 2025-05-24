@@ -2,7 +2,7 @@
   "title": "IP Locator",
   "description": "Track location and network information based on an IP address.",
   "method": "GET",
-  "path": "/api/iplocator?ip=8.8.8.8",
+  "path": "/api/iplocator",
   "placeholder": "Enter an IP address, e.g., 8.8.8.8",
   "response": {
     "ip": "8.8.8.8",

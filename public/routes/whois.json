@@ -1,8 +1,8 @@
 {
-  "title": "WHOIS & Metadata Checker",
-  "description": "Retrieve complete WHOIS information and metadata from a web page (title, description, keywords).",
+  "title": "WHOIS Checker",
+  "description": "Retrieve complete WHOIS information from a web page (title, description, keywords).",
   "method": "GET",
-  "path": "/api/whois?url=https://example.com",
+  "path": "/api/whois",
   "placeholder": "https://example.com",
   "response": {
     "success": true,

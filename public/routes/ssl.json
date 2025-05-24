@@ -2,7 +2,7 @@
   "title": "SSL Analyzer",
   "description": "Analyze SSL/TLS certificate of any domain. Returns information such as validity, expiration date, issuer, subject, and protocol version.",
   "method": "GET",
-  "path": "/api/ssl?host=example.com",
+  "path": "/api/ssl",
   "placeholder": "Enter a domain name (e.g., google.com)",
   "response": {
     "host": "example.com",

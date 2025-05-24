@@ -38,7 +38,7 @@
     const endpointNames = [
       'embed', 'whois', 'shorten', 'randomuser', 'iplocator', 'docparser',
       'qrcode', 'deepseek', 'gemini', 'llama', 'microsoft', 'nvidia',
-      'ssl', 'metadata', 'dns', 'translate'
+      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart'
     ];
 
     /**
@@ -57,21 +57,37 @@
               }
               return res.json();
             })
-            .then(data => ({ name, data })) // Kembalikan objek dengan nama dan data
+            .then(data => ({ name, data }))
             .catch(error => {
               console.error(`Error memuat ${name}.json:`, error);
-              return { name, error: error.message }; // Kembalikan error juga
+              return { name, error: error.message };
             })
         );
 
         const results = await Promise.all(fetchPromises);
-        apiAccordionContainer.innerHTML = ''; // Hapus spinner loading
+        apiAccordionContainer.innerHTML = '';
+
+        let asciiArtFonts = [];
+        try {
+            const fontsRes = await fetch('/api/asciiart/fonts');
+            if (fontsRes.ok) {
+                const fontsData = await fontsRes.json();
+                if (fontsData.success && Array.isArray(fontsData.fonts)) {
+                    asciiArtFonts = fontsData.fonts;
+                }
+            }
+        } catch (fontError) {
+            console.error("Error fetching ASCII Art fonts:", fontError);
+        }
 
         results.forEach(result => {
           if (result.data) {
-            apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
+            if (result.name === 'asciiart') {
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, asciiArtFonts);
+            } else {
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
+            }
           } else {
-            // Tampilkan pesan error untuk endpoint yang gagal dimuat
             apiAccordionContainer.innerHTML += `
               <div class="accordion-item">
                 <h2 class="accordion-header" id="heading-${result.name}">
@@ -89,7 +105,6 @@
           }
         });
 
-        // Inisialisasi semua elemen Prism.js setelah semua konten dimuat
         Prism.highlightAll();
 
       } catch (error) {
@@ -100,13 +115,15 @@
 
     /**
      * Merender satu kartu API sebagai item accordion Bootstrap.
-     * @param {string} name - Nama unik endpoint (misal: 'translate').
+     * @param {string} name - Nama unik endpoint.
      * @param {object} data - Data JSON dari file dokumentasi endpoint.
+     * @param {Array<string>} [fonts=[]] - Daftar font ASCII Art yang tersedia (hanya untuk 'asciiart').
      * @returns {string} HTML string untuk item accordion.
      */
-    function renderApiCard(name, data) {
+    function renderApiCard(name, data, fonts = []) {
       let inputFieldsHtml = '';
       let tryApiButtonHtml = '';
+      let responseSectionsHtml = ''; // Bagian baru untuk mengontrol tampilan respons
 
       // Logika untuk menampilkan input fields berdasarkan nama endpoint
       if (name === 'docparser' || name === 'metadata') {
@@ -153,8 +170,35 @@
             <input type="text" class="form-control" id="input-targetLang-${name}" placeholder="Kode bahasa tujuan (misal: id, en-US/en-GB)">
           </div>
         `;
-      } else {
-        // Untuk endpoint lain yang menggunakan input tunggal
+      } else if (name === 'currency') {
+          inputFieldsHtml = `
+            <div class="mb-3">
+              <label for="input-amount-${name}" class="form-label">Jumlah</label>
+              <input type="number" class="form-control mb-2" id="input-amount-${name}" placeholder="Jumlah uang (misal: 100)">
+              <label for="input-from-${name}" class="form-label">Dari Mata Uang</label>
+              <input type="text" class="form-control mb-2" id="input-from-${name}" placeholder="Kode mata uang (misal: USD, IDR)">
+              <label for="input-to-${name}" class="form-label">Ke Mata Uang</label>
+              <input type="text" class="form-control" id="input-to-${name}" placeholder="Kode mata uang (misal: IDR, JPY)">
+            </div>
+          `;
+      } else if (name === 'asciiart') {
+          const fontOptionsHtml = fonts.length > 0 ?
+            fonts.map(font => `<option value="${font}">${font}</option>`).join('') :
+            `<option value="Standard">Standard (Default)</option><option value="Big">Big</option><option value="Block">Block</option><option value="Slant">Slant</option><option value="Small">Small</option>`;
+
+          inputFieldsHtml = `
+            <div class="mb-3">
+              <label for="input-text-${name}" class="form-label">Teks</label>
+              <textarea class="form-control mb-2" id="input-text-${name}" placeholder="Teks untuk dikonversi ke ASCII Art"></textarea>
+              <label for="input-font-${name}" class="form-label">Font</label>
+              <select class="form-select" id="input-font-${name}">
+                  <option value="">Default (Standard)</option>
+                  ${fontOptionsHtml}
+              </select>
+            </div>
+          `;
+      }
+      else {
         inputFieldsHtml = `
           <div class="mb-3">
             <label for="input-${name}" class="form-label">Input</label>
@@ -173,6 +217,44 @@
           </div>
         `;
       }
+
+      // === Logika untuk menampilkan bagian respons ===
+      // Untuk asciiart, kita hanya menampilkan "Hasil Respons" dan "Contoh Curl"
+      if (name === 'asciiart') {
+          responseSectionsHtml = `
+              <h6 class="fw-semibold">Hasil Respons:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="output-${name}" class="language-text"></code></pre> <h6 class="fw-semibold mt-4">Contoh Curl:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
+          `;
+      } else {
+          // Untuk API lain, tampilkan semua bagian respons seperti biasa
+          responseSectionsHtml = `
+              <h6 class="fw-semibold">Hasil Respons:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+                <a class="btn btn-outline-success btn-sm d-none" id="download-${name}" download><i class="bi bi-download"></i> Unduh</a>
+              </div>
+              <pre><code id="output-${name}" class="language-json"></code></pre>
+              <img id="image-${name}" class="qrcode-preview d-none" />
+
+              <h6 class="fw-semibold mt-4">Contoh Curl:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
+              
+              <h6 class="fw-semibold mt-4">Contoh Respons (dari JSON):</h6>
+              <pre><code class="language-json">${JSON.stringify(data.response, null, 2)}</code></pre>
+          `;
+      }
+      // =========================================================
+
 
       return `
         <div class="accordion-item">
@@ -194,18 +276,7 @@
 
               ${tryApiButtonHtml}
 
-              <h6 class="fw-semibold mt-4">Example Curl:</h6> <div class="d-flex gap-2 mb-2">
-                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
-              </div>
-              <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
-
-              <h6 class="fw-semibold mt-4">Example Respons:</h6> <div class="d-flex gap-2 mb-2">
-                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
-                <a class="btn btn-outline-success btn-sm d-none" id="download-${name}" download><i class="bi bi-download"></i> Unduh</a>
-              </div>
-              <pre><code id="output-${name}" class="language-json"></code></pre>
-              <img id="image-${name}" class="qrcode-preview d-none" />
-            </div>
+              ${responseSectionsHtml} </div>
           </div>
         </div>
       `;
@@ -230,7 +301,8 @@
       duration.textContent = '';
 
       try {
-        let res, json;
+        let res; // Deklarasikan res di sini
+        let dataToDisplay; // Variabel untuk menyimpan data yang akan ditampilkan
 
         if (name === 'docparser' || name === 'metadata') {
           const input = document.getElementById(`input-${name}`);
@@ -242,8 +314,10 @@
           const formData = new FormData();
           formData.append('file', file);
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
+          dataToDisplay = await res.json(); // Ini akan selalu JSON
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
+          dataToDisplay = await res.json();
         } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
           const input = document.getElementById(`input-${name}`);
           const prompt = input?.value.trim();
@@ -260,6 +334,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+          dataToDisplay = await res.json();
         } else if (name === 'gemini') {
           const input = document.getElementById(`input-${name}`);
           const prompt = input?.value.trim();
@@ -276,6 +351,7 @@
           if (imageFile) formData.append('image', imageFile);
           if (session) formData.append('session', session);
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
+          dataToDisplay = await res.json();
         } else if (name === 'translate') {
             const textInput = document.getElementById(`input-text-${name}`);
             const sourceLangInput = document.getElementById(`input-sourceLang-${name}`);
@@ -296,8 +372,49 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+            dataToDisplay = await res.json();
+        } else if (name === 'currency') {
+            const amountInput = document.getElementById(`input-amount-${name}`);
+            const fromInput = document.getElementById(`input-from-${name}`);
+            const toInput = document.getElementById(`input-to-${name}`);
+
+            const amount = amountInput?.value.trim();
+            const from = fromInput?.value.trim();
+            const to = toInput?.value.trim();
+
+            if (!amount || !from || !to) {
+                output.textContent = 'Semua input (Jumlah, Dari Mata Uang, Ke Mata Uang) wajib diisi.';
+                return;
+            }
+
+            if (isNaN(parseFloat(amount))) {
+                output.textContent = 'Jumlah harus berupa angka yang valid.';
+                return;
+            }
+
+            res = await fetch(`/api/${name}?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+            dataToDisplay = await res.json();
+        } else if (name === 'asciiart') {
+            const textInput = document.getElementById(`input-text-${name}`);
+            const fontSelect = document.getElementById(`input-font-${name}`);
+
+            const text = textInput?.value.trim();
+            const font = fontSelect?.value.trim();
+
+            if (!text) {
+                output.textContent = 'Parameter "Teks" wajib diisi.';
+                return;
+            }
+
+            let apiUrl = `/api/${name}?text=${encodeURIComponent(text)}`;
+            if (font) {
+                apiUrl += `&font=${encodeURIComponent(font)}`;
+            }
+
+            res = await fetch(apiUrl);
+            dataToDisplay = await res.text(); // <== Ambil respons sebagai teks biasa
         }
-        else { // Logika untuk endpoint lain yang menggunakan input tunggal
+        else {
           const input = document.getElementById(`input-${name}`);
           const value = input?.value.trim();
           if (!value) {
@@ -315,23 +432,41 @@
             headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
             body
           });
+          dataToDisplay = await res.json();
         }
 
-        json = await res.json();
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
-        output.textContent = JSON.stringify(json, null, 2);
+        
+        // Tampilkan data sesuai formatnya
+        if (name === 'asciiart') {
+            output.classList.remove('language-json');
+            output.classList.add('language-text');
+            output.textContent = dataToDisplay; // Langsung tampilkan teks
+        } else {
+            output.classList.remove('language-text'); // Pastikan tidak ada class text
+            output.classList.add('language-json');
+            output.textContent = JSON.stringify(dataToDisplay, null, 2); // Stringify JSON
+        }
         Prism.highlightElement(output);
 
-        if (name === 'qrcode' && json.dataUrl) {
-          image.src = json.dataUrl;
+
+        if (name === 'qrcode' && dataToDisplay.dataUrl) { // Gunakan dataToDisplay
+          image.src = dataToDisplay.dataUrl;
           image.classList.remove('d-none');
-          download.href = json.dataUrl;
+          download.href = dataToDisplay.dataUrl;
           download.classList.remove('d-none');
         }
       } catch (error) {
         console.error("Error calling API:", error);
         output.textContent = `Gagal memuat API: ${error.message || 'Terjadi kesalahan tidak dikenal.'}`;
+        // Pastikan juga error di ASCII art ditampilkan dengan monospace
+        if (name === 'asciiart') {
+            output.classList.remove('language-json');
+            output.classList.add('language-text');
+        } else {
+            output.classList.add('language-json');
+        }
         Prism.highlightElement(output);
       } finally {
         loading.classList.add('d-none');
@@ -350,7 +485,7 @@
       textarea.select();
       try {
         document.execCommand('copy');
-        alert('Respons disalin.'); // Ganti dengan modal/toast yang lebih baik di produksi
+        alert('Respons disalin.');
       } catch (err) {
         console.error('Gagal menyalin teks:', err);
         alert('Gagal menyalin respons. Silakan salin secara manual.');
@@ -370,7 +505,7 @@
       textarea.select();
       try {
         document.execCommand('copy');
-        alert('Curl disalin.'); // Ganti dengan modal/toast yang lebih baik di produksi
+        alert('Curl disalin.');
       } catch (err) {
         console.error('Gagal menyalin curl:', err);
         alert('Gagal menyalin curl. Silakan salin secara manual.');
@@ -385,7 +520,7 @@
       if (darkSwitch) {
         darkSwitch.checked = (theme === 'dark');
       }
-      localStorage.setItem('theme', theme); // Simpan preferensi tema
+      localStorage.setItem('theme', theme);
     }
 
     // Periksa preferensi tema saat halaman dimuat
@@ -394,16 +529,13 @@
       if (savedTheme) {
         applyTheme(savedTheme);
       } else {
-        // Default ke dark mode jika belum ada preferensi tersimpan
         applyTheme('dark');
       }
 
-      // Event listener untuk toggle switch
       document.getElementById('darkSwitch').addEventListener('change', e => {
         applyTheme(e.target.checked ? 'dark' : 'light');
       });
 
-      // Memuat semua endpoint setelah DOM siap
       loadAllEndpoints();
     });
   </script>
@@ -412,6 +544,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
 </body>
 </html>
 

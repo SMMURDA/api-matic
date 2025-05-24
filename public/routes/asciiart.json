@@ -1,0 +1,14 @@
+{
+  "title": "Text to ASCII Art Converter",
+  "description": "Mengkonversi teks menjadi seni ASCII menggunakan berbagai font. Hasilnya adalah teks biasa, cocok untuk pesan bergaya terminal atau seni digital.",
+  "method": "GET",
+  "path": "/api/asciiart",
+  "request_params": {
+    "text": "string (Teks yang akan dikonversi menjadi ASCII Art)",
+    "font": "string (Opsional, nama font, misal: 'Big', 'Block', 'Slant'. Lihat /api/asciiart/fonts untuk daftar lengkap)"
+  },
+  "example_request_url": "/api/asciiart?text=Hello%20World!",
+  "response": "\n _   _      _ _         __        __ \n| | | | ___| | | ___    \\ \\      / / \n| |_| |/ _ \\ | |/ _ \\    \\ \\ /\\ / /  \n|  _  |  __/ | | (_) |    \\ V  V /   \n|_| |_|\\___|_|_|\\___/      \\_/\\_/    \n                                     \n",
+  "curl": "curl -X GET 'https://matic.eu.org/api/asciiart?text=Hello%20Matic&font=Block'"
+}
+

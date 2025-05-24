@@ -12,6 +12,7 @@
     "dotenv": "^16.5.0",
     "exifreader": "^4.30.1",
     "express": "^5.1.0",
+    "figlet": "^1.8.1",
     "fs": "^0.0.1-security",
     "jimp": "^1.6.0",
     "jsdom": "^26.1.0",

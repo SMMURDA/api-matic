@@ -19,13 +19,16 @@ const nvidiaRoute = require('./public/routes/nvidia');
 const sslRoute = require('./public/routes/ssl');
 const metadataRoute = require('./public/routes/metadata');
 const dnsRoute = require('./public/routes/dns');
-const translateRoute = require('./public/routes/translate'); // <== Tambahkan Translate API di sini
+const translateRoute = require('./public/routes/translate');
+const currencyRoute = require('./public/routes/currency');
+const asciiartRoute = require('./public/routes/asciiart'); // <== Tambahkan ASCII Art API di sini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+app.set('trust proxy', 1); // Mempercayai proxy pertama (Nginx)
 app.use(express.static(path.join(__dirname, 'public'), {
   extensions: ['html']
 }));
@@ -48,7 +51,9 @@ app.use('/api/nvidia', nvidiaRoute);
 app.use('/api/ssl', sslRoute);
 app.use('/api/metadata', metadataRoute);
 app.use('/api/dns', dnsRoute);
-app.use('/api/translate', translateRoute); // <== Daftarkan Translate route di sini
+app.use('/api/translate', translateRoute);
+app.use('/api/currency', currencyRoute);
+app.use('/api/asciiart', asciiartRoute); // <== Daftarkan ASCII Art route di sini
 
 // Home
 app.get('/', (req, res) => {
