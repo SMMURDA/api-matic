@@ -1,0 +1,21 @@
+[
+  {
+    "title": "Color Format Converter",
+    "description": "Mengkonversi nilai warna dari satu format ke format lain (HEX, RGB, HSL, CMYK).",
+    "method": "GET",
+    "path": "/api/color",
+    "request_params": {
+      "colorValue": "string (Nilai warna, misal: '#FF0000', 'rgb(255,0,0)', 'hsl(0,100%,50%)')",
+      "toFormat": "string (Opsional, 'hex', 'rgb', 'hsl', 'cmyk'. Default: 'rgb')"
+    },
+    "example_request_url": "http://localhost:3000/api/color/convert?colorValue=rgb(255,0,0)&toFormat=hex",
+    "response": {
+      "success": true,
+      "originalColor": "rgb(255,0,0)",
+      "convertedFormat": "hex",
+      "convertedValue": "#ff0000"
+    },
+    "curl": "curl -X GET 'https://matic.eu.org/api/color/convert?colorValue=%2300ff00&toFormat=hsl'"
+  }
+]
+

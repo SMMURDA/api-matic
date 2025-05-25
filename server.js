@@ -21,7 +21,8 @@ const metadataRoute = require('./public/routes/metadata');
 const dnsRoute = require('./public/routes/dns');
 const translateRoute = require('./public/routes/translate');
 const currencyRoute = require('./public/routes/currency');
-const asciiartRoute = require('./public/routes/asciiart'); // <== Tambahkan ASCII Art API di sini
+const asciiartRoute = require('./public/routes/asciiart');
+const colorRoute = require('./public/routes/color'); // <== Tambahkan Color API di sini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,7 +54,8 @@ app.use('/api/metadata', metadataRoute);
 app.use('/api/dns', dnsRoute);
 app.use('/api/translate', translateRoute);
 app.use('/api/currency', currencyRoute);
-app.use('/api/asciiart', asciiartRoute); // <== Daftarkan ASCII Art route di sini
+app.use('/api/asciiart', asciiartRoute);
+app.use('/api/color', colorRoute); // <== Daftarkan Color route di sini
 
 // Home
 app.get('/', (req, res) => {
