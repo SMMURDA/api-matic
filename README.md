@@ -19,9 +19,7 @@ Simple RESTful API with `TEST` on Frontend
 #### Endpoints
 
 - **`GET /api/embed`**
-- **`GET /api/currency`**
 - **`GET /api/whois`**
-- **`GET /api/asciiart`**
 - **`GET /api/shorten`**
 - **`GET /api/randomuser`**
 - **`GET /api/iplocator`**
