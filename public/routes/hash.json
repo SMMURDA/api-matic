@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Generate Hash",
+    "description": "Menghitung nilai hash (MD5, SHA-1, SHA-256, SHA-512) untuk data yang diberikan. Hasilnya digunakan untuk verifikasi integritas data atau penyimpanan kata sandi. Data input harus dalam Base64.",
+    "method": "POST",
+    "path": "/api/hash",
+    "request_body": {
+      "data": "string (Data asli dalam Base64, misal: 'SGVsbG8gV29ybGQh' untuk 'Hello World!')",
+      "algorithm": "string (md5, sha1, sha256, sha512)",
+      "encoding": "string (Opsional, 'hex' atau 'base64'. Default: 'hex')"
+    },
+    "example_request_body": {
+      "data": "SGVsbG8gV29ybGQh",
+      "algorithm": "sha256",
+      "encoding": "hex"
+    },
+    "response": {
+      "success": true,
+      "originalData": "SGVsbG8gV29ybGQh",
+      "algorithm": "sha256",
+      "hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b2779679204017",
+      "encoding": "hex"
+    },
+    "curl": "curl -X POST https://matic.eu.org/api/hash \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"data\": \"SGVsbG8gV29ybGQh\", \"algorithm\": \"sha256\", \"encoding\": \"hex\"}'"
+  }
+]
+

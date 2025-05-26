@@ -22,14 +22,15 @@ const dnsRoute = require('./public/routes/dns');
 const translateRoute = require('./public/routes/translate');
 const currencyRoute = require('./public/routes/currency');
 const asciiartRoute = require('./public/routes/asciiart');
-const colorRoute = require('./public/routes/color'); // <== Tambahkan Color API di sini
+const colorRoute = require('./public/routes/color');
+const hashingRoute = require('./public/routes/hash');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.set('trust proxy', 1); // Mempercayai proxy pertama (Nginx)
+app.set('trust proxy', 1);
 app.use(express.static(path.join(__dirname, 'public'), {
   extensions: ['html']
 }));
@@ -55,7 +56,8 @@ app.use('/api/dns', dnsRoute);
 app.use('/api/translate', translateRoute);
 app.use('/api/currency', currencyRoute);
 app.use('/api/asciiart', asciiartRoute);
-app.use('/api/color', colorRoute); // <== Daftarkan Color route di sini
+app.use('/api/color', colorRoute);
+app.use('/api/hash', hashingRoute);
 
 // Home
 app.get('/', (req, res) => {
