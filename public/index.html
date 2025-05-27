@@ -38,8 +38,7 @@
     const endpointNames = [
       'embed', 'whois', 'shorten', 'randomuser', 'iplocator', 'docparser',
       'qrcode', 'deepseek', 'gemini', 'llama', 'microsoft', 'nvidia',
-      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart',
-      'color', 'hash'
+      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart'
     ];
 
     /**
@@ -50,17 +49,22 @@
       apiAccordionContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Memuat dokumentasi API...</p></div>';
 
       try {
-        const fetchPromises = endpointNames.map(async name => {
-          const res = await fetch(`/routes/${name}.json`);
-          if (!res.ok) {
-            throw new Error(`Gagal memuat ${name}.json: ${res.statusText}`);
-          }
-          const data = await res.json();
-          return { name, data };
-        });
+        const fetchPromises = endpointNames.map(name =>
+          fetch(`/routes/${name}.json`)
+            .then(res => {
+              if (!res.ok) {
+                throw new Error(`Gagal memuat ${name}.json: ${res.statusText}`);
+              }
+              return res.json();
+            })
+            .then(data => ({ name, data }))
+            .catch(error => {
+              console.error(`Error memuat ${name}.json:`, error);
+              return { name, error: error.message };
+            })
+        );
 
-        const results = await Promise.all(fetchPromises.map(p => p.catch(e => ({ error: e.message }))));
-
+        const results = await Promise.all(fetchPromises);
         apiAccordionContainer.innerHTML = '';
 
         let asciiArtFonts = [];
@@ -78,17 +82,10 @@
 
         results.forEach(result => {
           if (result.data) {
-            if (Array.isArray(result.data)) {
-                result.data.forEach((endpointData, index) => {
-                    const subName = `${result.name}-${index}`;
-                    apiAccordionContainer.innerHTML += renderApiCard(subName, endpointData);
-                });
+            if (result.name === 'asciiart') {
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, asciiArtFonts);
             } else {
-                if (result.name === 'asciiart') {
-                    apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, asciiArtFonts);
-                } else {
-                    apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
-                }
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
             }
           } else {
             apiAccordionContainer.innerHTML += `
@@ -126,28 +123,14 @@
     function renderApiCard(name, data, fonts = []) {
       let inputFieldsHtml = '';
       let tryApiButtonHtml = '';
-      let uniqueIdBase = name;
-      let pathPrefix = '';
+      let responseSectionsHtml = ''; // Bagian baru untuk mengontrol tampilan respons
 
-      // Menentukan pathPrefix dan uniqueIdBase berdasarkan nama endpoint
-      if (name.startsWith('color-')) {
-          pathPrefix = data.path;
-          uniqueIdBase = `color-${name.split('-')[1]}`;
-      } else if (name.startsWith('hash-')) {
-          pathPrefix = data.path;
-          uniqueIdBase = `hash-${name.split('-')[1]}`;
-      }
-      else {
-          pathPrefix = `/api/${name}`;
-          uniqueIdBase = name;
-      }
-
-
+      // Logika untuk menampilkan input fields berdasarkan nama endpoint
       if (name === 'docparser' || name === 'metadata') {
         inputFieldsHtml = `
           <div class="mb-3">
-            <label for="input-${uniqueIdBase}" class="form-label">Pilih File</label>
-            <input type="file" class="form-control" id="input-${uniqueIdBase}" accept="*/*">
+            <label for="input-${name}" class="form-label">Pilih File</label>
+            <input type="file" class="form-control" id="input-${name}" accept="*/*">
           </div>
         `;
       } else if (name === 'randomuser') {
@@ -159,43 +142,43 @@
       } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
         inputFieldsHtml = `
           <div class="mb-3">
-            <label for="input-${uniqueIdBase}" class="form-label">Prompt</label>
-            <input type="text" class="form-control mb-2" id="input-${uniqueIdBase}" placeholder="Masukkan prompt">
-            <label for="session-${uniqueIdBase}" class="form-label">Session</label>
-            <input type="text" class="form-control" id="session-${uniqueIdBase}" placeholder="Session (opsional)">
+            <label for="input-${name}" class="form-label">Prompt</label>
+            <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
+            <label for="session-${name}" class="form-label">Session</label>
+            <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
           </div>
         `;
       } else if (name === 'gemini') {
         inputFieldsHtml = `
           <div class="mb-3">
-            <label for="input-${uniqueIdBase}" class="form-label">Prompt</label>
-            <input type="text" class="form-control mb-2" id="input-${uniqueIdBase}" placeholder="Masukkan prompt">
-            <label for="image-${uniqueIdBase}" class="form-label">Gambar</label>
-            <input type="file" class="form-control mb-2" id="image-${uniqueIdBase}" accept="image/*">
-            <label for="session-${uniqueIdBase}" class="form-label">Session</label>
-            <input type="text" class="form-control" id="session-${uniqueIdBase}" placeholder="Session (opsional)">
+            <label for="input-${name}" class="form-label">Prompt</label>
+            <input type="text" class="form-control mb-2" id="input-${name}" placeholder="Masukkan prompt">
+            <label for="image-${name}" class="form-label">Gambar</label>
+            <input type="file" class="form-control mb-2" id="image-${name}" accept="image/*">
+            <label for="session-${name}" class="form-label">Session</label>
+            <input type="text" class="form-control" id="session-${name}" placeholder="Session (opsional)">
           </div>
         `;
       } else if (name === 'translate') {
         inputFieldsHtml = `
           <div class="mb-3">
-            <label for="input-text-${uniqueIdBase}" class="form-label">Teks</label>
-            <textarea class="form-control mb-2" id="input-text-${uniqueIdBase}" placeholder="Teks yang akan diterjemahkan"></textarea>
-            <label for="input-sourceLang-${uniqueIdBase}" class="form-label">Bahasa Sumber</label>
-            <input type="text" class="form-control mb-2" id="input-sourceLang-${uniqueIdBase}" placeholder="Kode bahasa sumber (misal: en, id)">
-            <label for="input-targetLang-${uniqueIdBase}" class="form-label">Bahasa Tujuan</label>
-            <input type="text" class="form-control" id="input-targetLang-${uniqueIdBase}" placeholder="Kode bahasa tujuan (misal: id, en-US/en-GB)">
+            <label for="input-text-${name}" class="form-label">Teks</label>
+            <textarea class="form-control mb-2" id="input-text-${name}" placeholder="Teks yang akan diterjemahkan"></textarea>
+            <label for="input-sourceLang-${name}" class="form-label">Bahasa Sumber</label>
+            <input type="text" class="form-control mb-2" id="input-sourceLang-${name}" placeholder="Kode bahasa sumber (misal: en, id)">
+            <label for="input-targetLang-${name}" class="form-label">Bahasa Tujuan</label>
+            <input type="text" class="form-control" id="input-targetLang-${name}" placeholder="Kode bahasa tujuan (misal: id, en-US/en-GB)">
           </div>
         `;
       } else if (name === 'currency') {
           inputFieldsHtml = `
             <div class="mb-3">
-              <label for="input-amount-${uniqueIdBase}" class="form-label">Jumlah</label>
-              <input type="number" class="form-control mb-2" id="input-amount-${uniqueIdBase}" placeholder="Jumlah uang (misal: 100)">
-              <label for="input-from-${uniqueIdBase}" class="form-label">Dari Mata Uang</label>
-              <input type="text" class="form-control mb-2" id="input-from-${uniqueIdBase}" placeholder="Kode mata uang (misal: USD, IDR)">
-              <label for="input-to-${uniqueIdBase}" class="form-label">Ke Mata Uang</label>
-              <input type="text" class="form-control" id="input-to-${uniqueIdBase}" placeholder="Kode mata uang (misal: IDR, JPY)">
+              <label for="input-amount-${name}" class="form-label">Jumlah</label>
+              <input type="number" class="form-control mb-2" id="input-amount-${name}" placeholder="Jumlah uang (misal: 100)">
+              <label for="input-from-${name}" class="form-label">Dari Mata Uang</label>
+              <input type="text" class="form-control mb-2" id="input-from-${name}" placeholder="Kode mata uang (misal: USD, IDR)">
+              <label for="input-to-${name}" class="form-label">Ke Mata Uang</label>
+              <input type="text" class="form-control" id="input-to-${name}" placeholder="Kode mata uang (misal: IDR, JPY)">
             </div>
           `;
       } else if (name === 'asciiart') {
@@ -205,47 +188,12 @@
 
           inputFieldsHtml = `
             <div class="mb-3">
-              <label for="input-text-${uniqueIdBase}" class="form-label">Teks</label>
-              <textarea class="form-control mb-2" id="input-text-${uniqueIdBase}" placeholder="Teks untuk dikonversi ke ASCII Art"></textarea>
-              <label for="input-font-${uniqueIdBase}" class="form-label">Font</label>
-              <select class="form-select" id="input-font-${uniqueIdBase}">
+              <label for="input-text-${name}" class="form-label">Teks</label>
+              <textarea class="form-control mb-2" id="input-text-${name}" placeholder="Teks untuk dikonversi ke ASCII Art"></textarea>
+              <label for="input-font-${name}" class="form-label">Font</label>
+              <select class="form-select" id="input-font-${name}">
                   <option value="">Default (Standard)</option>
                   ${fontOptionsHtml}
-              </select>
-            </div>
-          `;
-      } else if (name.startsWith('color-')) {
-          if (data.path.includes('/convert')) {
-            inputFieldsHtml = `
-              <div class="mb-3">
-                <label for="input-colorValue-${uniqueIdBase}" class="form-label">Nilai Warna</label>
-                <input type="text" class="form-control mb-2" id="input-colorValue-${uniqueIdBase}" placeholder="Contoh: #FF0000 atau rgb(255,0,0)">
-                <label for="input-toFormat-${uniqueIdBase}" class="form-label">Konversi Ke Format</label>
-                <select class="form-select" id="input-toFormat-${uniqueIdBase}">
-                    <option value="rgb">RGB (Default)</option>
-                    <option value="hex">HEX</option>
-                    <option value="hsl">HSL</option>
-                    <option value="cmyk">CMYK</option>
-                </select>
-              </div>
-            `;
-          }
-      } else if (name.startsWith('hash-')) { // <== Logika untuk API hash (hanya generate)
-          inputFieldsHtml = `
-            <div class="mb-3">
-              <label for="input-data-${uniqueIdBase}" class="form-label">Data (Base64)</label>
-              <textarea class="form-control mb-2" id="input-data-${uniqueIdBase}" placeholder="Data asli dalam Base64"></textarea>
-              <label for="input-algorithm-${uniqueIdBase}" class="form-label">Algoritma</label>
-              <select class="form-select mb-2" id="input-algorithm-${uniqueIdBase}">
-                  <option value="sha256">SHA-256</option>
-                  <option value="md5">MD5</option>
-                  <option value="sha1">SHA-1</option>
-                  <option value="sha512">SHA-512</option>
-              </select>
-              <label for="input-encoding-${uniqueIdBase}" class="form-label">Encoding Output</label>
-              <select class="form-select" id="input-encoding-${uniqueIdBase}">
-                  <option value="hex">HEX (Default)</option>
-                  <option value="base64">Base64</option>
               </select>
             </div>
           `;
@@ -253,27 +201,65 @@
       else {
         inputFieldsHtml = `
           <div class="mb-3">
-            <label for="input-${uniqueIdBase}" class="form-label">Input</label>
-            <input type="text" class="form-control" id="input-${uniqueIdBase}" placeholder="${data.placeholder || 'Teks / URL'}">
+            <label for="input-${name}" class="form-label">Input</label>
+            <input type="text" class="form-control" id="input-${name}" placeholder="${data.placeholder || 'Teks / URL'}">
           </div>
         `;
       }
 
+      // Hanya tampilkan bagian "Try it out" jika ada inputField
       if (inputFieldsHtml.trim() !== '<div class="mb-3"><p class="text-muted">Endpoint ini tidak memerlukan input.</p></div>') {
         tryApiButtonHtml = `
           <div class="d-flex align-items-center gap-2 mb-3">
-            <button class="btn btn-primary" id="btn-${uniqueIdBase}" onclick="tryApi('${uniqueIdBase}', '${data.path}')"><i class="bi bi-play-fill"></i> Kirim</button>
-            <div id="loading-${uniqueIdBase}" class="spinner-border text-primary d-none" role="status"></div>
-            <span id="duration-${uniqueIdBase}" class="text-muted small"></span>
+            <button class="btn btn-primary" id="btn-${name}" onclick="tryApi('${name}')"><i class="bi bi-play-fill"></i> Kirim</button>
+            <div id="loading-${name}" class="spinner-border text-primary d-none" role="status"></div>
+            <span id="duration-${name}" class="text-muted small"></span>
           </div>
         `;
       }
+
+      // === Logika untuk menampilkan bagian respons ===
+      // Untuk asciiart, kita hanya menampilkan "Hasil Respons" dan "Contoh Curl"
+      if (name === 'asciiart') {
+          responseSectionsHtml = `
+              <h6 class="fw-semibold">Hasil Respons:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="output-${name}" class="language-text"></code></pre> <h6 class="fw-semibold mt-4">Contoh Curl:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
+          `;
+      } else {
+          // Untuk API lain, tampilkan semua bagian respons seperti biasa
+          responseSectionsHtml = `
+              <h6 class="fw-semibold">Hasil Respons:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+                <a class="btn btn-outline-success btn-sm d-none" id="download-${name}" download><i class="bi bi-download"></i> Unduh</a>
+              </div>
+              <pre><code id="output-${name}" class="language-json"></code></pre>
+              <img id="image-${name}" class="qrcode-preview d-none" />
+
+              <h6 class="fw-semibold mt-4">Contoh Curl:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
+              
+              <h6 class="fw-semibold mt-4">Contoh Respons (dari JSON):</h6>
+              <pre><code class="language-json">${JSON.stringify(data.response, null, 2)}</code></pre>
+          `;
+      }
+      // =========================================================
 
 
       return `
         <div class="accordion-item">
-          <h2 class="accordion-header" id="heading-${uniqueIdBase}">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${uniqueIdBase}" aria-expanded="false" aria-controls="collapse-${uniqueIdBase}">
+          <h2 class="accordion-header" id="heading-${name}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${name}" aria-expanded="false" aria-controls="collapse-${name}">
               <div class="api-title-group">
                 <div class="api-path-line">
                   <span class="badge text-bg-primary">${data.method}</span> <code>${data.path}</code>
@@ -282,7 +268,7 @@
               </div>
             </button>
           </h2>
-          <div id="collapse-${uniqueIdBase}" class="accordion-collapse collapse" aria-labelledby="heading-${uniqueIdBase}" data-bs-parent="#apiAccordion">
+          <div id="collapse-${name}" class="accordion-collapse collapse" aria-labelledby="heading-${name}" data-bs-parent="#apiAccordion">
             <div class="accordion-body">
               <p class="text-muted">${data.description}</p>
 
@@ -290,23 +276,7 @@
 
               ${tryApiButtonHtml}
 
-              <h6 class="fw-semibold">Hasil Respons:</h6>
-              <div class="d-flex gap-2 mb-2">
-                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${uniqueIdBase}')"><i class="bi bi-clipboard"></i> Salin</button>
-                <a class="btn btn-outline-success btn-sm d-none" id="download-${uniqueIdBase}" download><i class="bi bi-download"></i> Unduh</a>
-              </div>
-              <pre><code id="output-${uniqueIdBase}" class="language-json"></code></pre>
-              <img id="image-${uniqueIdBase}" class="qrcode-preview d-none" />
-
-              <h6 class="fw-semibold mt-4">Contoh Curl:</h6>
-              <div class="d-flex gap-2 mb-2">
-                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${uniqueIdBase}')"><i class="bi bi-clipboard"></i> Salin</button>
-              </div>
-              <pre><code id="curl-${uniqueIdBase}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
-              
-              <h6 class="fw-semibold mt-4">Contoh Respons (dari JSON):</h6>
-              <pre><code class="language-json">${JSON.stringify(data.response, null, 2)}</code></pre>
-            </div>
+              ${responseSectionsHtml} </div>
           </div>
         </div>
       `;
@@ -314,10 +284,9 @@
 
     /**
      * Mengirim request API untuk endpoint yang dipilih.
-     * @param {string} name - Nama unik endpoint (dari id uniqueIdBase).
-     * @param {string} fullPath - Path lengkap API (misal: /api/color/generate).
+     * @param {string} name - Nama unik endpoint.
      */
-    async function tryApi(name, fullPath) {
+    async function tryApi(name) {
       const output = document.getElementById(`output-${name}`);
       const image = document.getElementById(`image-${name}`);
       const download = document.getElementById(`download-${name}`);
@@ -332,56 +301,10 @@
       duration.textContent = '';
 
       try {
-        let res;
-        let dataToDisplay;
-        let apiUrl = '';
-        let requestBody = {};
-        let requestMethod = 'GET';
-        let requestHeaders = {};
+        let res; // Deklarasikan res di sini
+        let dataToDisplay; // Variabel untuk menyimpan data yang akan ditampilkan
 
-        // === Logika API hash ===
-        if (name.startsWith('hash-')) {
-            requestHeaders['Content-Type'] = 'application/json';
-            requestMethod = 'POST'; // Hanya generate endpoint, yang adalah POST
-
-            const data = document.getElementById(`input-data-${name}`)?.value;
-            const algorithm = document.getElementById(`input-algorithm-${name}`)?.value;
-            const encoding = document.getElementById(`input-encoding-${name}`)?.value;
-
-            if (!data || !algorithm) {
-                output.textContent = 'Data dan Algoritma wajib diisi.';
-                return;
-            }
-            requestBody = { data, algorithm };
-            if (encoding) requestBody.encoding = encoding;
-
-            res = await fetch(fullPath, {
-                method: requestMethod,
-                headers: requestHeaders,
-                body: JSON.stringify(requestBody)
-            });
-            dataToDisplay = await res.json();
-        }
-        // === Akhir Logika API hash ===
-        else if (name.startsWith('color-')) {
-            if (fullPath.includes('/convert')) {
-                const colorValueInput = document.getElementById(`input-colorValue-${name}`);
-                const toFormatSelect = document.getElementById(`input-toFormat-${name}`);
-
-                const colorValue = colorValueInput?.value.trim();
-                const toFormat = toFormatSelect?.value.trim();
-
-                if (!colorValue) {
-                    output.textContent = 'Parameter "Nilai Warna" wajib diisi.';
-                    return;
-                }
-                apiUrl = `${fullPath}?colorValue=${encodeURIComponent(colorValue)}`;
-                if (toFormat) apiUrl += `&toFormat=${encodeURIComponent(toFormat)}`;
-                res = await fetch(apiUrl);
-                dataToDisplay = await res.json();
-            }
-        }
-        else if (name === 'docparser' || name === 'metadata') {
+        if (name === 'docparser' || name === 'metadata') {
           const input = document.getElementById(`input-${name}`);
           const file = input?.files?.[0];
           if (!file) {
@@ -390,10 +313,10 @@
           }
           const formData = new FormData();
           formData.append('file', file);
-          res = await fetch(fullPath, { method: 'POST', body: formData });
-          dataToDisplay = await res.json();
+          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
+          dataToDisplay = await res.json(); // Ini akan selalu JSON
         } else if (name === 'randomuser') {
-          res = await fetch(fullPath);
+          res = await fetch(`/api/${name}`);
           dataToDisplay = await res.json();
         } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
           const input = document.getElementById(`input-${name}`);
@@ -404,12 +327,12 @@
             output.textContent = 'Masukkan prompt.';
             return;
           }
-          requestBody = { prompt };
-          if (session) requestBody.session = session;
-          res = await fetch(fullPath, {
+          const body = { prompt };
+          if (session) body.session = session;
+          res = await fetch(`/api/${name}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify(body),
           });
           dataToDisplay = await res.json();
         } else if (name === 'gemini') {
@@ -427,7 +350,7 @@
           formData.append('prompt', prompt);
           if (imageFile) formData.append('image', imageFile);
           if (session) formData.append('session', session);
-          res = await fetch(fullPath, { method: 'POST', body: formData });
+          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
           dataToDisplay = await res.json();
         } else if (name === 'translate') {
             const textInput = document.getElementById(`input-text-${name}`);
@@ -443,11 +366,11 @@
                 return;
             }
 
-            requestBody = { text, sourceLang, targetLang };
-            res = await fetch(fullPath, {
+            const body = { text, sourceLang, targetLang };
+            res = await fetch(`/api/${name}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(body)
             });
             dataToDisplay = await res.json();
         } else if (name === 'currency') {
@@ -469,9 +392,7 @@
                 return;
             }
 
-            apiUrl = `${fullPath}?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(from)}` +
-                     `&to=${encodeURIComponent(to)}`;
-            res = await fetch(apiUrl);
+            res = await fetch(`/api/${name}?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
             dataToDisplay = await res.json();
         } else if (name === 'asciiart') {
             const textInput = document.getElementById(`input-text-${name}`);
@@ -485,13 +406,13 @@
                 return;
             }
 
-            apiUrl = `${fullPath}?text=${encodeURIComponent(text)}`;
+            let apiUrl = `/api/${name}?text=${encodeURIComponent(text)}`;
             if (font) {
                 apiUrl += `&font=${encodeURIComponent(font)}`;
             }
 
             res = await fetch(apiUrl);
-            dataToDisplay = await res.text();
+            dataToDisplay = await res.text(); // <== Ambil respons sebagai teks biasa
         }
         else {
           const input = document.getElementById(`input-${name}`);
@@ -500,13 +421,16 @@
             output.textContent = 'Masukkan input.';
             return;
           }
-          apiUrl = `${fullPath}?${data.paramKey || 'url'}=${encodeURIComponent(value)}`;
-          const body = data.method === 'POST' && name === 'qrcode' ? JSON.stringify({ text: value }) : null;
-          
-          res = await fetch(apiUrl, {
-            method: data.method === 'POST' ? 'POST' : 'GET',
-            headers: data.method === 'POST' ? { 'Content-Type': 'application/json' } : undefined,
-            body: data.method === 'POST' ? body : undefined
+          const body = name === 'qrcode' ? JSON.stringify({ text: value }) : null;
+          let paramKey = 'url';
+          if (name === 'iplocator') paramKey = 'ip';
+          else if (name === 'ssl') paramKey = 'host';
+          else if (name === 'dns') paramKey = 'domain';
+
+          res = await fetch(`/api/${name}?${paramKey}=${encodeURIComponent(value)}`, {
+            method: name === 'qrcode' ? 'POST' : 'GET',
+            headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
+            body
           });
           dataToDisplay = await res.json();
         }
@@ -514,19 +438,20 @@
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
         
-        if (name.startsWith('asciiart') && typeof dataToDisplay === 'string') {
+        // Tampilkan data sesuai formatnya
+        if (name === 'asciiart') {
             output.classList.remove('language-json');
             output.classList.add('language-text');
-            output.textContent = dataToDisplay;
+            output.textContent = dataToDisplay; // Langsung tampilkan teks
         } else {
-            output.classList.remove('language-text');
+            output.classList.remove('language-text'); // Pastikan tidak ada class text
             output.classList.add('language-json');
-            output.textContent = JSON.stringify(dataToDisplay, null, 2);
+            output.textContent = JSON.stringify(dataToDisplay, null, 2); // Stringify JSON
         }
         Prism.highlightElement(output);
 
 
-        if (name === 'qrcode' && dataToDisplay && dataToDisplay.dataUrl) {
+        if (name === 'qrcode' && dataToDisplay.dataUrl) { // Gunakan dataToDisplay
           image.src = dataToDisplay.dataUrl;
           image.classList.remove('d-none');
           download.href = dataToDisplay.dataUrl;
@@ -535,7 +460,8 @@
       } catch (error) {
         console.error("Error calling API:", error);
         output.textContent = `Gagal memuat API: ${error.message || 'Terjadi kesalahan tidak dikenal.'}`;
-        if (name.startsWith('asciiart') || name.startsWith('hash-')) {
+        // Pastikan juga error di ASCII art ditampilkan dengan monospace
+        if (name === 'asciiart') {
             output.classList.remove('language-json');
             output.classList.add('language-text');
         } else {
@@ -621,4 +547,5 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
 </body>
 </html>
+
 
