@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>API Status Matic</title>
+  <title>API Status Dashboard</title>
   <link rel="stylesheet" href="status.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
@@ -13,7 +14,7 @@
       <p class="subtitle">Live monitoring for Matic API</p>
     </header>
 
-    <div class="endpoint-selector">
+    <div class="card endpoint-selector">
       <label>Select API Endpoint:</label>
       <div id="apiList" class="api-list">
         <button data-endpoint="/api/gemini">Gemini</button>
@@ -27,10 +28,18 @@
         <button data-endpoint="/api/whois">Whois</button>
         <button data-endpoint="/api/shorten">Shorten</button>
         <button data-endpoint="/api/iplocator">IP Locator</button>
+        <button data-endpoint="/api/ssl">SSL</button>
+        <button data-endpoint="/api/metadata">Metadata</button>
+        <button data-endpoint="/api/dns">DNS</button>
+        <button data-endpoint="/api/translate">Translate</button>
+        <button data-endpoint="/api/currency">Currency</button>
+        <button data-endpoint="/api/asciiart">ASCII Art</button>
+        <button data-endpoint="/api/hash">Hash</button>
+        <button data-endpoint="/api/leet">Leet</button>
       </div>
     </div>
 
-    <div class="status-card" id="statusCard" style="margin-top: 20px;">
+    <div class="card status-card" id="statusCard">
       <div class="status-header">
         <h2 class="status-title">API Status</h2>
         <div class="status-indicator" id="apiStatus">●</div>
@@ -41,7 +50,7 @@
           <div class="info-value" id="endpointDisplay">—</div>
         </div>
         <div class="info-item">
-          <div class="info-label">Response Time</div>
+          <div class="info-label">Latest Response Time</div>
           <div class="info-value" id="responseTime">—</div>
         </div>
         <div class="info-item">
@@ -61,12 +70,12 @@
       <div class="last-updated" id="lastUpdated">Last updated: —</div>
     </div>
 
-    <div class="server-metrics">
+    <div class="card server-metrics">
       <h3 class="metrics-title">Server Metrics</h3>
       <div class="metric-cards">
         <div class="metric-card">
           <div class="metric-value" id="totalRequests">0</div>
-          <div class="metric-label">Total Requests Today</div>
+          <div class="metric-label">Total Requests</div>
         </div>
         <div class="metric-card">
           <div class="metric-value" id="averageResponseTime">0ms</div>
@@ -83,7 +92,13 @@
       </div>
     </div>
 
-    <div class="incident-history">
+    <div class="card recent-checks-section">
+        <h3 class="recent-checks-title">Recent Checks Log (<span id="recentChecksEndpointDisplay"></span>)</h3>
+        <div class="recent-checks-list" id="recentChecksList">
+            </div>
+    </div>
+
+    <div class="card incident-history">
       <h3 class="history-title">Incident History</h3>
       <div class="incident-list" id="incidentList"></div>
     </div>
@@ -93,19 +108,17 @@
     </footer>
   </div>
 
-  <!-- Scroll to top button -->
   <button id="scrollToTopBtn" title="Go to top">↑</button>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
   <script>
-    const CHECK_INTERVAL = 60000;
-    const baseUrl = 'https://matic.eu.org';
+    const CHECK_INTERVAL = 60000; // Check every 1 minute (60 seconds)
+    const baseUrl = ''; // Leave empty if server.js runs on the same domain
     let selectedEndpoint = '';
-    let startupTime = new Date();
-    let apiChecks = [];
-    let incidents = [];
-    let totalRequests = 0;
-    let successfulRequests = 0;
+    let apiChecks = {}; // Object to store history per endpoint
+    let incidents = {}; // Object to store incidents per endpoint
 
+    // DOM Elements
     const apiListEl = document.getElementById('apiList');
     const apiStatusEl = document.getElementById('apiStatus');
     const endpointDisplayEl = document.getElementById('endpointDisplay');
@@ -119,7 +132,16 @@
     const uptimeDaysEl = document.getElementById('uptimeDays');
     const successRateEl = document.getElementById('successRate');
     const incidentListEl = document.getElementById('incidentList');
+    const recentChecksListEl = document.getElementById('recentChecksList');
+    const recentChecksEndpointDisplayEl = document.getElementById('recentChecksEndpointDisplay');
     const refreshButtonEl = document.getElementById('refreshButton');
+
+    // Initialize history and incidents for each endpoint
+    document.querySelectorAll('#apiList button[data-endpoint]').forEach(btn => {
+        const endpoint = btn.getAttribute('data-endpoint');
+        apiChecks[endpoint] = [];
+        incidents[endpoint] = [];
+    });
 
     apiListEl.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-endpoint]');
@@ -129,133 +151,247 @@
       btn.classList.add('active');
 
       selectedEndpoint = btn.getAttribute('data-endpoint');
-      resetStats();
-      renderIncidentList();
-      checkApiStatus();
+      recentChecksEndpointDisplayEl.textContent = selectedEndpoint;
+      renderIncidentList(selectedEndpoint);
+      updateUI();
+      renderRecentChecks(selectedEndpoint);
+      checkApiStatus(true); // Force check status when selecting new endpoint
       document.getElementById('statusCard').scrollIntoView({ behavior: 'smooth' });
     });
 
-    refreshButtonEl.addEventListener('click', checkApiStatus);
+    refreshButtonEl.addEventListener('click', () => checkApiStatus(true));
 
-    function resetStats() {
-      apiChecks = [];
-      incidents = [];
-      totalRequests = 0;
-      successfulRequests = 0;
-    }
-
-    function renderIncidentList() {
+    function renderIncidentList(endpoint) {
       incidentListEl.innerHTML = '';
-      incidents.forEach(inc => {
+      const currentIncidents = incidents[endpoint] || [];
+      if (currentIncidents.length === 0) {
+        incidentListEl.innerHTML = '<div class="no-incidents">No incidents reported.</div>';
+        return;
+      }
+      currentIncidents.forEach(inc => {
         const d = document.createElement('div');
         d.className = 'incident-item';
         d.innerHTML = `
           <div class="incident-description">${inc.description}</div>
           <div class="incident-timestamp">
             ${inc.startTime.toLocaleString()} - 
-            ${inc.resolved ? inc.endTime.toLocaleString() : 'Still ongoing'}
+            ${inc.resolved ? inc.endTime.toLocaleString() : 'Ongoing'}
           </div>
-          ${inc.resolved ? `<div class="incident-duration">Duration: ${inc.duration}s</div>` : ''}
+          ${inc.resolved ? `<div class="incident-duration">Duration: ${inc.duration} seconds</div>` : ''}
         `;
         incidentListEl.appendChild(d);
       });
     }
 
-    async function checkApiStatus() {
+    function renderRecentChecks(endpoint) {
+        recentChecksListEl.innerHTML = '';
+        const currentChecks = apiChecks[endpoint] || [];
+        if (currentChecks.length === 0) {
+            recentChecksListEl.innerHTML = '<div class="no-recent-checks">No recent checks found.</div>';
+            return;
+        }
+
+        const displayChecks = currentChecks.slice(-10).reverse(); // Display last 10 checks
+
+        displayChecks.forEach(check => {
+            const d = document.createElement('div');
+            d.className = 'recent-check-item';
+            d.innerHTML = `
+                <span class="timestamp">${check.timestamp.toLocaleTimeString()}</span>
+                <span class="status ${check.isOnline ? 'online' : 'offline'}">${check.isOnline ? 'Online' : 'Offline'}</span>
+                <span class="response-time">${check.responseTime}ms</span>
+            `;
+            recentChecksListEl.appendChild(d);
+        });
+    }
+
+
+    async function fetchServerMetrics() {
+        try {
+            const res = await fetch(`${baseUrl}/api/server-metrics`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && data.metrics) {
+                    totalRequestsEl.textContent = data.metrics.totalRequests;
+                    averageResponseTimeEl.textContent = data.metrics.averageResponseTime;
+                    uptimeDaysEl.textContent = data.metrics.uptime.fullString;
+                    successRateEl.textContent = data.metrics.successRate;
+                }
+            } else {
+                console.error('Failed to fetch server metrics:', res.status, res.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching server metrics:', error);
+        }
+    }
+
+    async function checkApiStatus(forceUpdate = false) {
+      if (!selectedEndpoint && !forceUpdate) return;
+
+      fetchServerMetrics(); // Always fetch latest server metrics
+
       if (!selectedEndpoint) return;
+
       apiStatusEl.textContent = '● Checking...';
       apiStatusEl.className = 'status-indicator';
 
-      const url = baseUrl + selectedEndpoint;
       endpointDisplayEl.textContent = selectedEndpoint;
       const start = performance.now();
       let isOnline = false, responseTime = 0;
 
       try {
         let res;
-        const GET_METHODS = ['/api/embed', '/api/randomuser', '/api/shorten', '/api/whois', '/api/iplocator'];
+        let method = 'GET';
+        let body = null;
+        let headers = {};
+        let url = `${baseUrl}${selectedEndpoint}`;
 
+        // Specific test logic for each API endpoint
         if (selectedEndpoint === '/api/docparser') {
-          const formData = new FormData();
-          const blob = new Blob(['Hello, this is a test file'], { type: 'text/plain' });
-          formData.append('file', blob, 'test.txt');
-          res = await fetch(url, { method: 'POST', body: formData });
+            method = 'POST';
+            // Dummy text file content for docparser
+            const textData = 'This is a test text file for docparser.';
+            const blob = new Blob([textData], { type: 'text/plain' });
+            const formData = new FormData();
+            formData.append('file', blob, 'test.txt'); // Use test.txt
+            body = formData;
+        } else if (selectedEndpoint === '/api/metadata') {
+            method = 'POST';
+            // Dummy JPG image data (a very small, valid JPG)
+            // This is a 1x1 pixel black JPG, base64 encoded.
+            const jpgData = atob('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQoLCwsmDg0NDgwNDhEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg//wAARCAABAAEDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAC//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AfwA/AAH/2Q==');
+            const blob = new Blob([Uint8Array.from(jpgData.split('').map(char => char.charCodeAt(0)))], { type: 'image/jpeg' });
+            const formData = new FormData();
+            formData.append('file', blob, 'test.jpg'); // Use test.jpg
+            body = formData;
         } else if (selectedEndpoint === '/api/qrcode') {
-          res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: 'https://matic.eu.org' })
-          });
-        } else if (GET_METHODS.includes(selectedEndpoint)) {
-          const testUrl = selectedEndpoint.includes('iplocator') ? '?ip=1.1.1.1' : '?url=https://google.com';
-          res = await fetch(url + testUrl);
-        } else {
-          res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: 'Status Check' })
-          });
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ text: 'https://matic.eu.org/status-check' });
+        } else if (selectedEndpoint === '/api/translate') {
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ text: 'Hello', sourceLang: 'en', targetLang: 'id' });
+        } else if (selectedEndpoint === '/api/hash') {
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ data: 'test data', algorithm: 'sha256' });
+        } else if (selectedEndpoint === '/api/leet') {
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ text: 'Test Leet' });
+        } else if (selectedEndpoint === '/api/currency') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?amount=1&from=USD&to=IDR`;
+        } else if (selectedEndpoint === '/api/asciiart') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?text=test&font=Standard`;
+        } else if (selectedEndpoint === '/api/ssl') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?host=google.com`;
+        } else if (selectedEndpoint === '/api/dns') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?domain=google.com`;
+        } else if (selectedEndpoint === '/api/iplocator') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?ip=8.8.8.8`;
+        } else if (selectedEndpoint === '/api/embed') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+        } else if (selectedEndpoint === '/api/randomuser') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}`;
+        } else if (selectedEndpoint === '/api/shorten') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?url=https://example.com/long-url-to-shorten`;
+        } else if (selectedEndpoint === '/api/whois') {
+            method = 'GET';
+            url = `${baseUrl}${selectedEndpoint}?url=https://google.com`;
+        } else { // Default for generative AI endpoints (Gemini, DeepSeek, LLaMA, Microsoft, NVIDIA)
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ prompt: 'Test connectivity.' });
         }
 
+        res = await fetch(url, { method, headers: Object.keys(headers).length > 0 ? headers : undefined, body });
+        
         responseTime = Math.round(performance.now() - start);
         isOnline = res.ok;
-        totalRequests++;
-        if (isOnline) successfulRequests++;
 
-        apiChecks.push({ timestamp: new Date(), isOnline, responseTime });
-        if (apiChecks.length > 1000) apiChecks.shift();
-        handleIncidents(isOnline);
-      } catch {
+      } catch (error) {
+        console.error(`Error checking ${selectedEndpoint}:`, error);
         responseTime = Math.round(performance.now() - start);
         isOnline = false;
-        apiChecks.push({ timestamp: new Date(), isOnline, responseTime });
-        handleIncidents(isOnline);
       }
 
-      updateUI(isOnline, responseTime);
+      apiChecks[selectedEndpoint].push({ timestamp: new Date(), isOnline, responseTime });
+      if (apiChecks[selectedEndpoint].length > 50) apiChecks[selectedEndpoint].shift(); 
+
+      handleIncidents(selectedEndpoint, isOnline);
+      updateUI();
+      renderRecentChecks(selectedEndpoint);
     }
 
-    function handleIncidents(isOnline) {
-      if (apiChecks.length < 3) return;
-      const last = incidents[incidents.length - 1];
-      const last3 = apiChecks.slice(-3);
+    function handleIncidents(endpoint, isOnline) {
+      const currentIncidents = incidents[endpoint];
+      const currentApiChecks = apiChecks[endpoint];
+      if (currentApiChecks.length < 3) return;
+
+      const last = currentIncidents[currentIncidents.length - 1];
+      const last3Checks = currentApiChecks.slice(-3);
 
       if (!isOnline && (!last || last.resolved)) {
-        if (last3.every(c => !c.isOnline)) {
-          incidents.push({ startTime: new Date(), resolved: false, description: 'Downtime detected' });
+        if (last3Checks.every(c => !c.isOnline)) {
+          currentIncidents.push({ startTime: new Date(), description: 'Downtime detected', resolved: false });
         }
       } else if (isOnline && last && !last.resolved) {
-        if (last3.every(c => c.isOnline)) {
+        if (last3Checks.every(c => c.isOnline)) {
           last.resolved = true;
           last.endTime = new Date();
           last.duration = Math.round((last.endTime - last.startTime) / 1000);
         }
       }
+      renderIncidentList(endpoint);
     }
 
-    function updateUI(isOnline, rt) {
-      apiStatusEl.textContent = `● ${isOnline ? 'Online' : 'Offline'}`;
-      apiStatusEl.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
-      responseTimeEl.textContent = `${rt}ms`;
+    function updateUI() {
+      if (!selectedEndpoint) {
+          endpointDisplayEl.textContent = 'Select Endpoint';
+          apiStatusEl.textContent = '● Idle';
+          apiStatusEl.className = 'status-indicator';
+          responseTimeEl.textContent = '—';
+          uptimePercentageEl.textContent = '—';
+          uptimeProgressBarEl.style.width = '0%';
+          lastCheckedEl.textContent = '—';
+          lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
+          return;
+      }
 
-      const onlineCount = apiChecks.filter(c=>c.isOnline).length;
-      const upPct = apiChecks.length ? ((onlineCount/apiChecks.length)*100).toFixed(1) : '100.0';
-      uptimePercentageEl.textContent = `${upPct}%`;
-      uptimeProgressBarEl.style.width = `${upPct}%`;
+      endpointDisplayEl.textContent = selectedEndpoint;
 
-      lastCheckedEl.textContent = new Date().toLocaleTimeString();
+      const currentChecks = apiChecks[selectedEndpoint];
+      const latestCheck = currentChecks[currentChecks.length - 1];
+
+      if (latestCheck) {
+          apiStatusEl.textContent = `● ${latestCheck.isOnline ? 'Online' : 'Offline'}`;
+          apiStatusEl.className = `status-indicator ${latestCheck.isOnline ? 'online' : 'offline'}`;
+          responseTimeEl.textContent = `${latestCheck.responseTime}ms`;
+
+          const onlineCount = currentChecks.filter(c => c.isOnline).length;
+          const upPct = currentChecks.length ? ((onlineCount / currentChecks.length) * 100).toFixed(1) : '100.0';
+          uptimePercentageEl.textContent = `${upPct}%`;
+          uptimeProgressBarEl.style.width = `${upPct}%`;
+
+          lastCheckedEl.textContent = latestCheck.timestamp.toLocaleTimeString();
+      } else {
+          apiStatusEl.textContent = '● N/A';
+          apiStatusEl.className = 'status-indicator';
+          responseTimeEl.textContent = '—';
+          uptimePercentageEl.textContent = '—';
+          uptimeProgressBarEl.style.width = '0%';
+          lastCheckedEl.textContent = '—';
+      }
       lastUpdatedEl.textContent = `Last updated: ${new Date().toLocaleString()}`;
-
-      totalRequestsEl.textContent = totalRequests;
-      const avg = apiChecks.length ? Math.round(apiChecks.reduce((s,c)=>s+c.responseTime,0)/apiChecks.length) : 0;
-      averageResponseTimeEl.textContent = `${avg}ms`;
-
-      const days = Math.floor((new Date() - startupTime)/(1000*60*60*24));
-      uptimeDaysEl.textContent = days;
-      const sr = totalRequests ? Math.round((successfulRequests/totalRequests)*100) : 0;
-      successRateEl.textContent = `${sr}%`;
-
-      renderIncidentList();
     }
 
     // Scroll to top button functionality
@@ -271,8 +407,16 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    document.querySelector('#apiList button').click();
-    setInterval(checkApiStatus, CHECK_INTERVAL);
+    // Initialization: Select the first endpoint automatically and start checks
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstButton = document.querySelector('#apiList button');
+        if (firstButton) {
+            firstButton.click();
+        }
+        setInterval(() => checkApiStatus(false), CHECK_INTERVAL);
+        fetchServerMetrics(); // Initial fetch for server metrics
+    });
   </script>
 </body>
 </html>
+
