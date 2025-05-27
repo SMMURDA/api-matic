@@ -92,12 +92,6 @@
       </div>
     </div>
 
-    <div class="card recent-checks-section">
-        <h3 class="recent-checks-title">Recent Checks Log (<span id="recentChecksEndpointDisplay"></span>)</h3>
-        <div class="recent-checks-list" id="recentChecksList">
-            </div>
-    </div>
-
     <div class="card incident-history">
       <h3 class="history-title">Incident History</h3>
       <div class="incident-list" id="incidentList"></div>
@@ -132,8 +126,7 @@
     const uptimeDaysEl = document.getElementById('uptimeDays');
     const successRateEl = document.getElementById('successRate');
     const incidentListEl = document.getElementById('incidentList');
-    const recentChecksListEl = document.getElementById('recentChecksList');
-    const recentChecksEndpointDisplayEl = document.getElementById('recentChecksEndpointDisplay');
+    // Removed recentChecksListEl and recentChecksEndpointDisplayEl
     const refreshButtonEl = document.getElementById('refreshButton');
 
     // Initialize history and incidents for each endpoint
@@ -151,10 +144,10 @@
       btn.classList.add('active');
 
       selectedEndpoint = btn.getAttribute('data-endpoint');
-      recentChecksEndpointDisplayEl.textContent = selectedEndpoint;
+      // Removed recentChecksEndpointDisplayEl.textContent = selectedEndpoint;
       renderIncidentList(selectedEndpoint);
       updateUI();
-      renderRecentChecks(selectedEndpoint);
+      // Removed renderRecentChecks(selectedEndpoint);
       checkApiStatus(true); // Force check status when selecting new endpoint
       document.getElementById('statusCard').scrollIntoView({ behavior: 'smooth' });
     });
@@ -183,27 +176,7 @@
       });
     }
 
-    function renderRecentChecks(endpoint) {
-        recentChecksListEl.innerHTML = '';
-        const currentChecks = apiChecks[endpoint] || [];
-        if (currentChecks.length === 0) {
-            recentChecksListEl.innerHTML = '<div class="no-recent-checks">No recent checks found.</div>';
-            return;
-        }
-
-        const displayChecks = currentChecks.slice(-10).reverse(); // Display last 10 checks
-
-        displayChecks.forEach(check => {
-            const d = document.createElement('div');
-            d.className = 'recent-check-item';
-            d.innerHTML = `
-                <span class="timestamp">${check.timestamp.toLocaleTimeString()}</span>
-                <span class="status ${check.isOnline ? 'online' : 'offline'}">${check.isOnline ? 'Online' : 'Offline'}</span>
-                <span class="response-time">${check.responseTime}ms</span>
-            `;
-            recentChecksListEl.appendChild(d);
-        });
-    }
+    // Removed renderRecentChecks function
 
 
     async function fetchServerMetrics() {
@@ -214,7 +187,11 @@
                 if (data.success && data.metrics) {
                     totalRequestsEl.textContent = data.metrics.totalRequests;
                     averageResponseTimeEl.textContent = data.metrics.averageResponseTime;
-                    uptimeDaysEl.textContent = data.metrics.uptime.fullString;
+                    
+                    // Format uptime string to "X days, Y hours, Z minutes"
+                    const uptime = data.metrics.uptime;
+                    uptimeDaysEl.textContent = `${uptime.days} days, ${uptime.hours} hours, ${uptime.minutes} minutes`;
+                    
                     successRateEl.textContent = data.metrics.successRate;
                 }
             } else {
@@ -249,20 +226,17 @@
         // Specific test logic for each API endpoint
         if (selectedEndpoint === '/api/docparser') {
             method = 'POST';
-            // Dummy text file content for docparser
             const textData = 'This is a test text file for docparser.';
             const blob = new Blob([textData], { type: 'text/plain' });
             const formData = new FormData();
-            formData.append('file', blob, 'test.txt'); // Use test.txt
+            formData.append('file', blob, 'test.txt');
             body = formData;
         } else if (selectedEndpoint === '/api/metadata') {
             method = 'POST';
-            // Dummy JPG image data (a very small, valid JPG)
-            // This is a 1x1 pixel black JPG, base64 encoded.
             const jpgData = atob('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQoLCwsmDg0NDgwNDhEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg//wAARCAABAAEDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAC//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AfwA/AAH/2Q==');
             const blob = new Blob([Uint8Array.from(jpgData.split('').map(char => char.charCodeAt(0)))], { type: 'image/jpeg' });
             const formData = new FormData();
-            formData.append('file', blob, 'test.jpg'); // Use test.jpg
+            formData.append('file', blob, 'test.jpg');
             body = formData;
         } else if (selectedEndpoint === '/api/qrcode') {
             method = 'POST';
@@ -329,7 +303,7 @@
 
       handleIncidents(selectedEndpoint, isOnline);
       updateUI();
-      renderRecentChecks(selectedEndpoint);
+      // Removed call to renderRecentChecks(selectedEndpoint);
     }
 
     function handleIncidents(endpoint, isOnline) {

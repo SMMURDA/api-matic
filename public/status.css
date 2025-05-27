@@ -55,26 +55,24 @@ h1 {
     font-weight: 300;
 }
 
-/* General Card Styling - Used for status-card, server-metrics, recent-checks-section, incident-history, endpoint-selector */
+/* General Card Styling */
 .status-card,
 .server-metrics,
 .incident-history,
-.recent-checks-section,
-.endpoint-selector {
+.endpoint-selector { /* Removed .recent-checks-section from here */
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
     padding: 30px;
     margin-bottom: 30px;
     box-shadow: var(--shadow-medium);
-    border-left: 5px solid var(--accent-color); /* Example left border */
+    border-left: 5px solid var(--accent-color);
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .status-card:hover,
 .server-metrics:hover,
 .incident-history:hover,
-.recent-checks-section:hover,
-.endpoint-selector:hover {
+.endpoint-selector:hover { /* Removed .recent-checks-section:hover from here */
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.4);
 }
@@ -88,14 +86,13 @@ h1 {
 
 .status-title,
 .metrics-title,
-.history-title,
-.recent-checks-title {
-    font-size: 1.8rem; /* Card title size */
+.history-title { /* Removed .recent-checks-title from here */
+    font-size: 1.8rem;
     font-weight: 700;
     margin: 0;
     color: var(--text-color);
-    text-align: center; /* Center title */
-    width: 100%; /* Make title take full width */
+    text-align: center;
+    width: 100%;
 }
 
 .status-indicator {
@@ -106,7 +103,7 @@ h1 {
     border-radius: 50px;
     font-size: 1.1rem;
     transition: all 0.3s ease;
-    flex-shrink: 0; /* Prevent shrinking */
+    flex-shrink: 0;
 }
 
 .online {
@@ -203,7 +200,7 @@ h1 {
     font-weight: 500;
 }
 
-/* Chart Container (removed as charts are removed) */
+/* Removed chart-specific styles */
 
 
 .incident-history {
@@ -264,62 +261,14 @@ h1 {
     color: var(--warning-color);
 }
 
-.no-incidents,
-.no-recent-checks {
+.no-incidents { /* Removed .no-recent-checks from here */
     padding: 20px;
     text-align: center;
     opacity: 0.7;
     font-style: italic;
 }
 
-/* Recent Checks Log */
-.recent-checks-section .recent-checks-list {
-    background-color: rgba(255, 255, 255, 0.07);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-    max-height: 400px; /* Limit log height */
-    overflow-y: auto; /* Enable scroll */
-}
-
-.recent-checks-section .recent-checks-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--accent-color);
-    text-align: center;
-}
-
-.recent-check-item {
-    padding: 15px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.recent-check-item:last-child {
-    border-bottom: none;
-}
-
-.recent-check-item .timestamp {
-    font-size: 0.9rem;
-    opacity: 0.7;
-    flex-shrink: 0;
-}
-
-.recent-check-item .status {
-    font-weight: 600;
-    flex-grow: 1;
-    text-align: center;
-}
-
-.recent-check-item .response-time {
-    font-size: 0.9rem;
-    font-weight: 600;
-    flex-shrink: 0;
-}
+/* Removed recent-checks-section styles */
 
 
 footer {
@@ -474,14 +423,13 @@ footer {
     .subtitle {
         font-size: 1rem;
     }
-    .status-card, .server-metrics, .incident-history, .endpoint-selector, .recent-checks-section {
+    .status-card, .server-metrics, .incident-history, .endpoint-selector { /* Removed .recent-checks-section from here */
         padding: 20px;
-        margin-bottom: 20px; /* Adjust margin for mobile */
+        margin-bottom: 20px;
     }
     .status-title,
     .metrics-title,
-    .history-title,
-    .recent-checks-title {
+    .history-title { /* Removed .recent-checks-title from here */
         font-size: 1.5rem;
     }
     .status-indicator {
@@ -501,7 +449,7 @@ footer {
     .api-list button {
         flex: 0 1 calc(50% - 10px);
     }
-    .incident-item, .recent-check-item {
+    .incident-item { /* Removed .recent-check-item from here */
         flex-direction: column;
         align-items: flex-start;
         padding: 15px 20px;
@@ -518,14 +466,13 @@ footer {
     .subtitle {
         font-size: 0.9rem;
     }
-    .status-card, .server-metrics, .incident-history, .endpoint-selector, .recent-checks-section {
+    .status-card, .server-metrics, .incident-history, .endpoint-selector { /* Removed .recent-checks-section from here */
         padding: 15px;
-        margin-bottom: 15px; /* Adjust margin for mobile */
+        margin-bottom: 15px;
     }
     .status-title,
     .metrics-title,
-    .history-title,
-    .recent-checks-title {
+    .history-title { /* Removed .recent-checks-title from here */
         font-size: 1.3rem;
     }
     .status-indicator {
