@@ -38,7 +38,7 @@
     const endpointNames = [
       'embed', 'whois', 'shorten', 'randomuser', 'iplocator', 'docparser',
       'qrcode', 'deepseek', 'gemini', 'llama', 'microsoft', 'nvidia',
-      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart'
+      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart', 'hash' // Menambahkan 'hash' ke daftar endpoint
     ];
 
     /**
@@ -80,11 +80,28 @@
             console.error("Error fetching ASCII Art fonts:", fontError);
         }
 
+        // Tambahan: Ambil daftar algoritma hashing yang didukung dari server
+        let hashAlgorithms = [];
+        try {
+            const algoRes = await fetch('/api/hash/algorithms');
+            if (algoRes.ok) {
+                const algoData = await algoRes.json();
+                if (algoData.success && Array.isArray(algoData.algorithms)) {
+                    hashAlgorithms = algoData.algorithms;
+                }
+            }
+        } catch (algoError) {
+            console.error("Error fetching hash algorithms:", algoError);
+        }
+
         results.forEach(result => {
           if (result.data) {
             if (result.name === 'asciiart') {
-                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, asciiArtFonts);
-            } else {
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, { fonts: asciiArtFonts });
+            } else if (result.name === 'hash') { // Logika khusus untuk API Hash
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, { algorithms: hashAlgorithms });
+            }
+            else {
                 apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
             }
           } else {
@@ -117,10 +134,10 @@
      * Merender satu kartu API sebagai item accordion Bootstrap.
      * @param {string} name - Nama unik endpoint.
      * @param {object} data - Data JSON dari file dokumentasi endpoint.
-     * @param {Array<string>} [fonts=[]] - Daftar font ASCII Art yang tersedia (hanya untuk 'asciiart').
+     * @param {object} [options={}] - Objek opsi tambahan (misal: { fonts: [], algorithms: [] }).
      * @returns {string} HTML string untuk item accordion.
      */
-    function renderApiCard(name, data, fonts = []) {
+    function renderApiCard(name, data, options = {}) {
       let inputFieldsHtml = '';
       let tryApiButtonHtml = '';
       let responseSectionsHtml = ''; // Bagian baru untuk mengontrol tampilan respons
@@ -182,8 +199,8 @@
             </div>
           `;
       } else if (name === 'asciiart') {
-          const fontOptionsHtml = fonts.length > 0 ?
-            fonts.map(font => `<option value="${font}">${font}</option>`).join('') :
+          const fontOptionsHtml = options.fonts && options.fonts.length > 0 ?
+            options.fonts.map(font => `<option value="${font}">${font}</option>`).join('') :
             `<option value="Standard">Standard (Default)</option><option value="Big">Big</option><option value="Block">Block</option><option value="Slant">Slant</option><option value="Small">Small</option>`;
 
           inputFieldsHtml = `
@@ -197,7 +214,29 @@
               </select>
             </div>
           `;
-      }
+      } else if (name === 'hash') { // Logika input untuk API Hash
+        const algorithmOptionsHtml = options.algorithms && options.algorithms.length > 0 ?
+            options.algorithms.map(algo => `<option value="${algo}">${algo.toUpperCase()}</option>`).join('') :
+            `<option value="sha256">SHA256</option><option value="md5">MD5</option><option value="sha1">SHA1</option><option value="sha512">SHA512</option>`; // Fallback umum jika gagal memuat algoritma
+
+        inputFieldsHtml = `
+            <div class="mb-3">
+                <label for="input-data-${name}" class="form-label">Data</label>
+                <textarea class="form-control mb-2" id="input-data-${name}" placeholder="Data yang akan di-hash"></textarea>
+                <label for="input-algorithm-${name}" class="form-label">Algoritma Hash</label>
+                <select class="form-select mb-2" id="input-algorithm-${name}">
+                    ${algorithmOptionsHtml}
+                </select>
+                <label for="input-encoding-${name}" class="form-label">Encoding Output</label>
+                <select class="form-select" id="input-encoding-${name}">
+                    <option value="hex">Hex (Default)</option>
+                    <option value="base64">Base64</option>
+                    <option value="latin1">Latin1</option>
+                    <option value="binary">Binary</option>
+                </select>
+            </div>
+        `;
+    }
       else {
         inputFieldsHtml = `
           <div class="mb-3">
@@ -412,7 +451,33 @@
             }
 
             res = await fetch(apiUrl);
-            dataToDisplay = await res.text(); // <== Ambil respons sebagai teks biasa
+            dataToDisplay = await res.text(); // Mengambil respons sebagai teks biasa
+        } else if (name === 'hash') { // Logika API Hash
+            const dataInput = document.getElementById(`input-data-${name}`);
+            const algorithmSelect = document.getElementById(`input-algorithm-${name}`);
+            const encodingSelect = document.getElementById(`input-encoding-${name}`);
+
+            const dataToHash = dataInput?.value.trim();
+            const algorithm = algorithmSelect?.value.trim();
+            const encoding = encodingSelect?.value.trim();
+
+            if (!dataToHash || !algorithm) {
+                output.textContent = 'Parameter "Data" dan "Algoritma Hash" wajib diisi.';
+                return;
+            }
+
+            const body = {
+                data: dataToHash,
+                algorithm: algorithm,
+                encoding: encoding || 'hex' // Default ke hex jika kosong
+            };
+
+            res = await fetch(`/api/${name}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            dataToDisplay = await res.json();
         }
         else {
           const input = document.getElementById(`input-${name}`);
@@ -547,5 +612,4 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
 </body>
 </html>
-
 

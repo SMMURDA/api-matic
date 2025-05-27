@@ -21,7 +21,8 @@ const metadataRoute = require('./public/routes/metadata');
 const dnsRoute = require('./public/routes/dns');
 const translateRoute = require('./public/routes/translate');
 const currencyRoute = require('./public/routes/currency');
-const asciiartRoute = require('./public/routes/asciiart'); // <== Tambahkan ASCII Art API di sini
+const asciiartRoute = require('./public/routes/asciiart');
+const hashRoute = require('./public/routes/hash'); // <== Tambahkan ini
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +31,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.set('trust proxy', 1); // Mempercayai proxy pertama (Nginx)
 app.use(express.static(path.join(__dirname, 'public'), {
-  extensions: ['html']
+    extensions: ['html']
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -53,15 +54,14 @@ app.use('/api/metadata', metadataRoute);
 app.use('/api/dns', dnsRoute);
 app.use('/api/translate', translateRoute);
 app.use('/api/currency', currencyRoute);
-app.use('/api/asciiart', asciiartRoute); // <== Daftarkan ASCII Art route di sini
+app.use('/api/asciiart', asciiartRoute);
+app.use('/api/hash', hashRoute); // <== Daftarkan route hash di sini
 
 // Home
 app.get('/', (req, res) => {
-  res.send('Selamat datang di API server');
+    res.send('Selamat datang di API server');
 });
 
 app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
+    console.log(`Server berjalan di http://localhost:${PORT}`);
 });
-
-

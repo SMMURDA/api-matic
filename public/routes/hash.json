@@ -1,0 +1,37 @@
+{
+  "title": "Hash Generator",
+  "description": "Menghitung nilai hash (MD5, SHA1, SHA256, SHA512, dll.) untuk data yang diberikan. Mendukung berbagai algoritma hashing yang tersedia di Node.js.",
+  "method": "POST",
+  "path": "/api/hash",
+  "parameters": [
+    {
+      "name": "data",
+      "type": "string",
+      "description": "Teks atau data yang akan di-hash.",
+      "required": true,
+      "example": "Hello World"
+    },
+    {
+      "name": "algorithm",
+      "type": "string",
+      "description": "Algoritma hashing yang akan digunakan (misal: `sha256`, `md5`, `sha1`, `sha512`).",
+      "required": true,
+      "example": "sha256"
+    },
+    {
+      "name": "encoding",
+      "type": "string",
+      "description": "Format output untuk hash (hex, base64, latin1, binary). Default: `hex`.",
+      "required": false,
+      "example": "hex"
+    }
+  ],
+  "response": {
+    "success": true,
+    "originalData": "Hello World",
+    "algorithm": "sha256",
+    "hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b2779679204017",
+    "encoding": "hex"
+  },
+  "curl": "curl -X POST -H \"Content-Type: application/json\" -d '{\"data\":\"Hello World\",\"algorithm\":\"sha256\",\"encoding\":\"hex\"}' https://matic.eu.org/api/hash"
+}
