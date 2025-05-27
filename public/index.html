@@ -38,7 +38,7 @@
     const endpointNames = [
       'embed', 'whois', 'shorten', 'randomuser', 'iplocator', 'docparser',
       'qrcode', 'deepseek', 'gemini', 'llama', 'microsoft', 'nvidia',
-      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart', 'hash' // Menambahkan 'hash' ke daftar endpoint
+      'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart', 'hash', 'leet'
     ];
 
     /**
@@ -55,6 +55,9 @@
               if (!res.ok) {
                 throw new Error(`Gagal memuat ${name}.json: ${res.statusText}`);
               }
+              // Handle JSON array response for hash.json (if it's still an array)
+              // Note: In a previous step, hash.json was an array. Assuming it's now a single object.
+              // If hash.json is still an array, you might need to adjust this.
               return res.json();
             })
             .then(data => ({ name, data }))
@@ -80,7 +83,6 @@
             console.error("Error fetching ASCII Art fonts:", fontError);
         }
 
-        // Tambahan: Ambil daftar algoritma hashing yang didukung dari server
         let hashAlgorithms = [];
         try {
             const algoRes = await fetch('/api/hash/algorithms');
@@ -98,8 +100,10 @@
           if (result.data) {
             if (result.name === 'asciiart') {
                 apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, { fonts: asciiArtFonts });
-            } else if (result.name === 'hash') { // Logika khusus untuk API Hash
+            } else if (result.name === 'hash') {
                 apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data, { algorithms: hashAlgorithms });
+            } else if (result.name === 'leet') {
+                apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
             }
             else {
                 apiAccordionContainer.innerHTML += renderApiCard(result.name, result.data);
@@ -214,10 +218,10 @@
               </select>
             </div>
           `;
-      } else if (name === 'hash') { // Logika input untuk API Hash
+      } else if (name === 'hash') {
         const algorithmOptionsHtml = options.algorithms && options.algorithms.length > 0 ?
             options.algorithms.map(algo => `<option value="${algo}">${algo.toUpperCase()}</option>`).join('') :
-            `<option value="sha256">SHA256</option><option value="md5">MD5</option><option value="sha1">SHA1</option><option value="sha512">SHA512</option>`; // Fallback umum jika gagal memuat algoritma
+            `<option value="sha256">SHA256</option><option value="md5">MD5</option><option value="sha1">SHA1</option><option value="sha512">SHA512</option>`;
 
         inputFieldsHtml = `
             <div class="mb-3">
@@ -233,6 +237,26 @@
                     <option value="base64">Base64</option>
                     <option value="latin1">Latin1</option>
                     <option value="binary">Binary</option>
+                </select>
+            </div>
+        `;
+    } else if (name === 'leet') {
+        inputFieldsHtml = `
+            <div class="mb-3">
+                <label for="input-text-${name}" class="form-label">Teks untuk Encode ke Leet Speak</label>
+                <textarea class="form-control mb-2" id="input-text-${name}" placeholder="Misal: Hello World"></textarea>
+                
+                <label for="input-leet_text-${name}" class="form-label">Teks Leet Speak untuk Decode</label>
+                <textarea class="form-control mb-2" id="input-leet_text-${name}" placeholder="Misal: H3110 W0r1d"></textarea>
+
+                <div class="form-text text-warning">Pilih salah satu input di atas (Teks biasa ATAU Teks Leet Speak).</div>
+
+                <label for="input-strictness-${name}" class="form-label mt-2">Tingkat Keketatan (Encode Only)</label>
+                <select class="form-select" id="input-strictness-${name}">
+                    <option value="">Default (Medium)</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
                 </select>
             </div>
         `;
@@ -271,8 +295,34 @@
               </div>
               <pre><code id="curl-${name}" class="language-bash">${data.curl || 'Tidak tersedia'}</code></pre>
           `;
-      } else {
-          // Untuk API lain, tampilkan semua bagian respons seperti biasa
+      } else if (name === 'leet') {
+          responseSectionsHtml = `
+              <h6 class="fw-semibold">Hasil Respons:</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse('${name}')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="output-${name}" class="language-json"></code></pre>
+
+              <h6 class="fw-semibold mt-4">Contoh Curl (Encode):</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}', 'encode')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-encode-${name}" class="language-bash">${data.curl_encode || 'Tidak tersedia'}</code></pre>
+
+              <h6 class="fw-semibold mt-4">Contoh Curl (Decode):</h6>
+              <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="copyCurl('${name}', 'decode')"><i class="bi bi-clipboard"></i> Salin</button>
+              </div>
+              <pre><code id="curl-decode-${name}" class="language-bash">${data.curl_decode || 'Tidak tersedia'}</code></pre>
+              
+              <h6 class="fw-semibold mt-4">Contoh Respons Encode (dari JSON):</h6>
+              <pre><code class="language-json">${JSON.stringify(data.response_encode, null, 2)}</code></pre>
+
+              <h6 class="fw-semibold mt-4">Contoh Respons Decode (dari JSON):</h6>
+              <pre><code class="language-json">${JSON.stringify(data.response_decode, null, 2)}</code></pre>
+          `;
+      }
+      else {
           responseSectionsHtml = `
               <h6 class="fw-semibold">Hasil Respons:</h6>
               <div class="d-flex gap-2 mb-2">
@@ -340,8 +390,8 @@
       duration.textContent = '';
 
       try {
-        let res; // Deklarasikan res di sini
-        let dataToDisplay; // Variabel untuk menyimpan data yang akan ditampilkan
+        let res;
+        let dataToDisplay;
 
         if (name === 'docparser' || name === 'metadata') {
           const input = document.getElementById(`input-${name}`);
@@ -353,7 +403,7 @@
           const formData = new FormData();
           formData.append('file', file);
           res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
-          dataToDisplay = await res.json(); // Ini akan selalu JSON
+          dataToDisplay = await res.json();
         } else if (name === 'randomuser') {
           res = await fetch(`/api/${name}`);
           dataToDisplay = await res.json();
@@ -451,8 +501,8 @@
             }
 
             res = await fetch(apiUrl);
-            dataToDisplay = await res.text(); // Mengambil respons sebagai teks biasa
-        } else if (name === 'hash') { // Logika API Hash
+            dataToDisplay = await res.text();
+        } else if (name === 'hash') {
             const dataInput = document.getElementById(`input-data-${name}`);
             const algorithmSelect = document.getElementById(`input-algorithm-${name}`);
             const encodingSelect = document.getElementById(`input-encoding-${name}`);
@@ -469,7 +519,7 @@
             const body = {
                 data: dataToHash,
                 algorithm: algorithm,
-                encoding: encoding || 'hex' // Default ke hex jika kosong
+                encoding: encoding || 'hex'
             };
 
             res = await fetch(`/api/${name}`, {
@@ -478,6 +528,35 @@
                 body: JSON.stringify(body)
             });
             dataToDisplay = await res.json();
+        } else if (name === 'leet') {
+            const textInput = document.getElementById(`input-text-${name}`);
+            const leetTextInput = document.getElementById(`input-leet_text-${name}`);
+            const strictnessSelect = document.getElementById(`input-strictness-${name}`);
+
+            const text = textInput?.value.trim();
+            const leet_text = leetTextInput?.value.trim();
+            const strictness = strictnessSelect?.value.trim();
+
+            if ((!text && !leet_text) || (text && leet_text)) {
+                output.textContent = 'Hanya boleh mengisi satu input: "Teks untuk Encode" ATAU "Teks Leet Speak untuk Decode".';
+                return;
+            }
+
+            let body;
+            if (text) {
+                body = { text: text };
+                if (strictness) body.strictness = strictness;
+            } else {
+                body = { leet_text: leet_text };
+            }
+
+            res = await fetch(`/api/${name}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            dataToDisplay = await res.json();
+
         }
         else {
           const input = document.getElementById(`input-${name}`);
@@ -503,20 +582,19 @@
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
         
-        // Tampilkan data sesuai formatnya
         if (name === 'asciiart') {
             output.classList.remove('language-json');
             output.classList.add('language-text');
-            output.textContent = dataToDisplay; // Langsung tampilkan teks
+            output.textContent = dataToDisplay;
         } else {
-            output.classList.remove('language-text'); // Pastikan tidak ada class text
+            output.classList.remove('language-text');
             output.classList.add('language-json');
-            output.textContent = JSON.stringify(dataToDisplay, null, 2); // Stringify JSON
+            output.textContent = JSON.stringify(dataToDisplay, null, 2);
         }
         Prism.highlightElement(output);
 
 
-        if (name === 'qrcode' && dataToDisplay.dataUrl) { // Gunakan dataToDisplay
+        if (name === 'qrcode' && dataToDisplay.dataUrl) {
           image.src = dataToDisplay.dataUrl;
           image.classList.remove('d-none');
           download.href = dataToDisplay.dataUrl;
@@ -525,7 +603,6 @@
       } catch (error) {
         console.error("Error calling API:", error);
         output.textContent = `Gagal memuat API: ${error.message || 'Terjadi kesalahan tidak dikenal.'}`;
-        // Pastikan juga error di ASCII art ditampilkan dengan monospace
         if (name === 'asciiart') {
             output.classList.remove('language-json');
             output.classList.add('language-text');
@@ -561,9 +638,16 @@
     /**
      * Menyalin perintah curl ke clipboard.
      * @param {string} name - Nama unik endpoint.
+     * @param {string} [type=''] - Tipe curl untuk Leet (encode/decode).
      */
-    function copyCurl(name) {
-      const curlText = document.getElementById(`curl-${name}`).innerText;
+    function copyCurl(name, type = '') {
+      let curlText;
+      if (name === 'leet' && type) {
+          curlText = document.getElementById(`curl-${type}-${name}`).innerText;
+      } else {
+          curlText = document.getElementById(`curl-${name}`).innerText;
+      }
+      
       const textarea = document.createElement('textarea');
       textarea.value = curlText;
       document.body.appendChild(textarea);
@@ -612,4 +696,3 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markup.min.js"></script>
 </body>
 </html>
-

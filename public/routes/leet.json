@@ -1,0 +1,52 @@
+{
+  "title": "Leet Speak Converter",
+  "description": "Mengonversi teks biasa ke Leet Speak (1337) atau sebaliknya. Masukkan 'text' untuk encode, atau 'leet_text' untuk decode. Jangan isi keduanya.",
+  "method": "POST",
+  "path": "/api/leet",
+  "parameters": [
+    {
+      "name": "text",
+      "type": "string",
+      "description": "Teks biasa yang ingin diubah ke Leet Speak.",
+      "required": "Salah satu 'text' atau 'leet_text' wajib diisi.",
+      "example": "Hello World"
+    },
+    {
+      "name": "leet_text",
+      "type": "string",
+      "description": "Teks Leet Speak yang ingin diubah kembali ke teks biasa.",
+      "required": "Salah satu 'text' atau 'leet_text' wajib diisi.",
+      "example": "H3110 W0r1d"
+    },
+    {
+      "name": "strictness",
+      "type": "string",
+      "description": "Opsional. Tingkat keketatan konversi Leet Speak (hanya berlaku untuk encode). Pilihan: 'low', 'medium', 'high'. Default: 'medium'.",
+      "required": false,
+      "example": "medium"
+    }
+  ],
+  "example_request_body_encode": {
+    "text": "Hello World",
+    "strictness": "medium"
+  },
+  "response_encode": {
+    "success": true,
+    "operation": "encode",
+    "original_text": "Hello World",
+    "leet_text": "H3110 W0r1d"
+  },
+  "curl_encode": "curl -X POST -H \"Content-Type: application/json\" -d '{\"text\": \"Hello World\", \"strictness\": \"medium\"}' https://matic.eu.org/api/leet",
+  "example_request_body_decode": {
+    "leet_text": "H3110 W0r1d"
+  },
+  "response_decode": {
+    "success": true,
+    "operation": "decode",
+    "original_leet_text": "H3110 W0r1d",
+    "decoded_text": "hello world"
+  },
+  "curl_decode": "curl -X POST -H \"Content-Type: application/json\" -d '{\"leet_text\": \"H3110 W0r1d\"}' https://matic.eu.org/api/leet"
+}
+
+

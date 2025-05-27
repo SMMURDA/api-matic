@@ -22,7 +22,8 @@ const dnsRoute = require('./public/routes/dns');
 const translateRoute = require('./public/routes/translate');
 const currencyRoute = require('./public/routes/currency');
 const asciiartRoute = require('./public/routes/asciiart');
-const hashRoute = require('./public/routes/hash'); // <== Tambahkan ini
+const hashRoute = require('./public/routes/hash');
+const leetRoute = require('./public/routes/leet'); // Import route Leet Speak yang baru
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +37,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// API routes
+// Daftarkan semua route API
 app.use('/api/whois', whoisRoute);
 app.use('/api/embed', embedRoute);
 app.use('/api/shorten', shortenRoute);
@@ -55,13 +56,16 @@ app.use('/api/dns', dnsRoute);
 app.use('/api/translate', translateRoute);
 app.use('/api/currency', currencyRoute);
 app.use('/api/asciiart', asciiartRoute);
-app.use('/api/hash', hashRoute); // <== Daftarkan route hash di sini
+app.use('/api/hash', hashRoute);
+app.use('/api/leet', leetRoute); // Daftarkan route Leet Speak
 
-// Home
+// Route Home
 app.get('/', (req, res) => {
     res.send('Selamat datang di API server');
 });
 
+// Mulai server
 app.listen(PORT, () => {
     console.log(`Server berjalan di http://localhost:${PORT}`);
 });
+
