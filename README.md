@@ -36,7 +36,6 @@ Simple RESTful API with `TEST` on Frontend
 - **`POST /api/translate`**
 - **`POST /api/currency`**
 - **`POST /api/asciiart`**
-- **`POST /api/color`**
 
 ---
 #### Pull Docker Image
