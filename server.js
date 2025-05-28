@@ -39,6 +39,25 @@ const serverMetrics = {
     requestCountForAvg: 0
 };
 
+const generateCustomApiKey = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const length = 48;
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const prefix = 'pk-';
+    return prefix + result;
+};
+
+const userApiKeys = new Map();
+
+const MASTER_API_KEY = process.env.MASTER_API_KEY || 'default_master_key_for_testing';
+const STATUS_PAGE_API_KEY = process.env.STATUS_PAGE_API_KEY; // Ambil API Key halaman status
+if (process.env.NODE_ENV !== 'production' && !process.env.MASTER_API_KEY) {
+    console.warn('WARNING: MASTER_API_KEY is not set in production. Using default key for testing.');
+}
+
 app.use((req, res, next) => {
     const start = process.hrtime.bigint();
 
@@ -63,6 +82,28 @@ app.use((req, res, next) => {
 app.use(cors());
 app.set('trust proxy', 1);
 
+const authenticateUserApiKey = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const userApiKey = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+
+    if (!userApiKey) {
+        return res.status(401).json({ success: false, message: 'Authentication failed: API Key is missing. Please visit the documentation page to get a key.' });
+    }
+
+    if (userApiKeys.has(userApiKey)) {
+        req.isStatusCheck = false; // Tandai ini bukan dari halaman status khusus
+        next();
+    } else if (userApiKey === MASTER_API_KEY) {
+        req.isStatusCheck = true; // Master Key bisa dianggap sebagai status check jika diinginkan
+        next();
+    } else if (userApiKey === STATUS_PAGE_API_KEY) { // Cek API Key halaman status
+        req.isStatusCheck = true; // Tandai permintaan ini dari halaman status
+        next();
+    } else {
+        return res.status(403).json({ success: false, message: 'Authentication failed: Invalid API Key.' });
+    }
+};
+
 const apiLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 10,
@@ -72,9 +113,28 @@ const apiLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    // Kunci: Lewati rate limiting jika permintaan datang dari halaman status
+    skip: (req, res) => req.isStatusCheck === true
 });
 
-app.use('/api/', apiLimiter);
+// PENTING: Endpoint untuk menghasilkan API Key harus didefinisikan SEBELUM
+// middleware autentikasi dan rate limiter global untuk /api/
+app.get('/api/get-new-api-key', (req, res) => {
+    const newApiKey = generateCustomApiKey();
+    userApiKeys.set(newApiKey, { createdAt: new Date(), ip: req.ip });
+    console.log(`Generated new API Key: ${newApiKey} for IP: ${req.ip}`);
+
+    if (userApiKeys.size > 10000) {
+        const oldestKey = userApiKeys.keys().next().value;
+        userApiKeys.delete(oldestKey);
+    }
+
+    res.json({ success: true, api_key: newApiKey, message: 'Your new API Key has been generated.' });
+});
+
+// Terapkan autentikasi API Key secara global ke semua API endpoint.
+// Rate limiter akan diterapkan secara individual ke setiap route di bawah.
+app.use('/api/', authenticateUserApiKey);
 
 app.use(express.static(path.join(__dirname, 'public'), {
     extensions: ['html']
@@ -82,27 +142,30 @@ app.use(express.static(path.join(__dirname, 'public'), {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/api/whois', whoisRoute);
-app.use('/api/embed', embedRoute);
-app.use('/api/shorten', shortenRoute);
-app.use('/api/randomuser', randomUserRoute);
-app.use('/api/iplocator', ipLocatorRoute);
-app.use('/api/docparser', docParserRoute);
-app.use('/api/qrcode', qrCodeRoute);
-app.use('/api/deepseek', deepseekRoute);
-app.use('/api/gemini', geminiRoute);
-app.use('/api/llama', llamaRoute);
-app.use('/api/microsoft', microsoftRoute);
-app.use('/api/nvidia', nvidiaRoute);
-app.use('/api/ssl', sslRoute);
-app.use('/api/metadata', metadataRoute);
-app.use('/api/dns', dnsRoute);
-app.use('/api/translate', translateRoute);
-app.use('/api/currency', currencyRoute);
-app.use('/api/asciiart', asciiartRoute);
-app.use('/api/hash', hashRoute);
-app.use('/api/leet', leetRoute);
+// Daftarkan semua route API dengan rate limiter individual
+// Endpoint server-metrics tidak perlu rate limiter
+app.use('/api/whois', apiLimiter, whoisRoute);
+app.use('/api/embed', apiLimiter, embedRoute);
+app.use('/api/shorten', apiLimiter, shortenRoute);
+app.use('/api/randomuser', apiLimiter, randomUserRoute);
+app.use('/api/iplocator', apiLimiter, ipLocatorRoute);
+app.use('/api/docparser', apiLimiter, docParserRoute);
+app.use('/api/qrcode', apiLimiter, qrCodeRoute);
+app.use('/api/deepseek', apiLimiter, deepseekRoute);
+app.use('/api/gemini', apiLimiter, geminiRoute);
+app.use('/api/llama', apiLimiter, llamaRoute);
+app.use('/api/microsoft', apiLimiter, microsoftRoute);
+app.use('/api/nvidia', apiLimiter, nvidiaRoute);
+app.use('/api/ssl', apiLimiter, sslRoute);
+app.use('/api/metadata', apiLimiter, metadataRoute);
+app.use('/api/dns', apiLimiter, dnsRoute);
+app.use('/api/translate', apiLimiter, translateRoute);
+app.use('/api/currency', apiLimiter, currencyRoute);
+app.use('/api/asciiart', apiLimiter, asciiartRoute);
+app.use('/api/hash', apiLimiter, hashRoute);
+app.use('/api/leet', apiLimiter, leetRoute);
 
+// Endpoint untuk mendapatkan metrik server - TIDAK DILINDUNGI RATE LIMITER
 app.get('/api/server-metrics', (req, res) => {
     const uptimeMs = new Date() - serverMetrics.serverStartTime;
     const uptimeSeconds = Math.floor(uptimeMs / 1000);

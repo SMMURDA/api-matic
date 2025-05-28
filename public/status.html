@@ -106,13 +106,19 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
   <script>
-    const CHECK_INTERVAL = 60000; // Check every 1 minute (60 seconds)
-    const baseUrl = ''; // Leave empty if server.js runs on the same domain
-    let selectedEndpoint = '';
-    let apiChecks = {}; // Object to store history per endpoint
-    let incidents = {}; // Object to store incidents per endpoint
+    const CHECK_INTERVAL = 60000;
+    const SERVER_METRICS_INTERVAL = 5000;
+    const baseUrl = '';
+    const API_KEY_STORAGE_KEY = 'matic_api_key_status'; 
+    
+    // PENTING: Ganti ini dengan STATUS_PAGE_API_KEY yang Anda set di file .env server
+    // Kunci ini akan digunakan untuk semua pengecekan status dan dikecualikan dari rate limit
+    let userApiKey = "MaticAPI"; 
 
-    // DOM Elements
+    let selectedEndpoint = '';
+    let apiChecks = {};
+    let incidents = {};
+
     const apiListEl = document.getElementById('apiList');
     const apiStatusEl = document.getElementById('apiStatus');
     const endpointDisplayEl = document.getElementById('endpointDisplay');
@@ -126,10 +132,11 @@
     const uptimeDaysEl = document.getElementById('uptimeDays');
     const successRateEl = document.getElementById('successRate');
     const incidentListEl = document.getElementById('incidentList');
-    // Removed recentChecksListEl and recentChecksEndpointDisplayEl
     const refreshButtonEl = document.getElementById('refreshButton');
+    // apiKeyDisplayEl dan copyApiKeyBtn tidak lagi dibutuhkan karena elemennya dihapus dari HTML
+    // const apiKeyDisplayEl = document.getElementById('userApiKeyDisplay'); 
+    // const copyApiKeyBtn = document.getElementById('copyApiKeyBtn'); 
 
-    // Initialize history and incidents for each endpoint
     document.querySelectorAll('#apiList button[data-endpoint]').forEach(btn => {
         const endpoint = btn.getAttribute('data-endpoint');
         apiChecks[endpoint] = [];
@@ -144,11 +151,9 @@
       btn.classList.add('active');
 
       selectedEndpoint = btn.getAttribute('data-endpoint');
-      // Removed recentChecksEndpointDisplayEl.textContent = selectedEndpoint;
       renderIncidentList(selectedEndpoint);
       updateUI();
-      // Removed renderRecentChecks(selectedEndpoint);
-      checkApiStatus(true); // Force check status when selecting new endpoint
+      checkApiStatus(true);
       document.getElementById('statusCard').scrollIntoView({ behavior: 'smooth' });
     });
 
@@ -176,38 +181,59 @@
       });
     }
 
-    // Removed renderRecentChecks function
-
-
     async function fetchServerMetrics() {
+        console.log("[fetchServerMetrics] Fetching server metrics.");
+        if (!userApiKey || userApiKey === "YOUR_STATUS_PAGE_API_KEY_HERE") {
+            console.error("STATUS_PAGE_API_KEY is not set in status.html. Aborting fetchServerMetrics.");
+            return;
+        }
+
         try {
-            const res = await fetch(`${baseUrl}/api/server-metrics`);
+            const res = await fetch(`${baseUrl}/api/server-metrics`, {
+                headers: {
+                    'Authorization': `Bearer ${userApiKey}`
+                }
+            });
+            console.log("[fetchServerMetrics] Response from /api/server-metrics:", res.status, res.statusText);
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && data.metrics) {
                     totalRequestsEl.textContent = data.metrics.totalRequests;
                     averageResponseTimeEl.textContent = data.metrics.averageResponseTime;
                     
-                    // Format uptime string to "X days, Y hours, Z minutes"
                     const uptime = data.metrics.uptime;
                     uptimeDaysEl.textContent = `${uptime.days} days, ${uptime.hours} hours, ${uptime.minutes} minutes`;
                     
                     successRateEl.textContent = data.metrics.successRate;
+                    console.log("[fetchServerMetrics] Server metrics updated successfully.");
+                } else {
+                    console.error("[fetchServerMetrics] Successful response but invalid metrics data:", data);
                 }
             } else {
-                console.error('Failed to fetch server metrics:', res.status, res.statusText);
+                const errorText = await res.text();
+                console.error("[fetchServerMetrics] Failed to fetch server metrics (response not OK):", res.status, res.statusText, errorText);
             }
         } catch (error) {
-            console.error('Error fetching server metrics:', error);
+            console.error("[fetchServerMetrics] Error while fetching server metrics:", error);
         }
     }
 
     async function checkApiStatus(forceUpdate = false) {
-      if (!selectedEndpoint && !forceUpdate) return;
+      console.log(`[checkApiStatus] Starting check for endpoint: ${selectedEndpoint || 'None selected'}. Force Update: ${forceUpdate}`);
+      if (!selectedEndpoint && !forceUpdate) {
+          console.log("[checkApiStatus] No endpoint selected and not a forced update, aborting.");
+          return;
+      }
 
-      fetchServerMetrics(); // Always fetch latest server metrics
+      if (!selectedEndpoint) {
+          console.log("[checkApiStatus] Endpoint still not selected, aborting.");
+          return;
+      }
 
-      if (!selectedEndpoint) return;
+      if (!userApiKey || userApiKey === "YOUR_STATUS_PAGE_API_KEY_HERE") {
+          console.error("STATUS_PAGE_API_KEY is not set in status.html. Aborting checkApiStatus.");
+          return;
+      }
 
       apiStatusEl.textContent = '● Checking...';
       apiStatusEl.className = 'status-indicator';
@@ -220,10 +246,13 @@
         let res;
         let method = 'GET';
         let body = null;
-        let headers = {};
+        let headers = {
+            'Authorization': `Bearer ${userApiKey}`
+        };
         let url = `${baseUrl}${selectedEndpoint}`;
 
-        // Specific test logic for each API endpoint
+        console.log(`[checkApiStatus] Preparing request for ${selectedEndpoint}. URL: ${url}, Method: ${method}, Headers: ${JSON.stringify(headers)}`);
+
         if (selectedEndpoint === '/api/docparser') {
             method = 'POST';
             const textData = 'This is a test text file for docparser.';
@@ -231,6 +260,8 @@
             const formData = new FormData();
             formData.append('file', blob, 'test.txt');
             body = formData;
+            delete headers['Content-Type'];
+            console.log(`[checkApiStatus] DocParser: Sending POST with FormData (test.txt).`);
         } else if (selectedEndpoint === '/api/metadata') {
             method = 'POST';
             const jpgData = atob('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQoLCwsmDg0NDgwNDhEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg//wAARCAABAAEDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAC//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AfwA/AAH/2Q==');
@@ -238,64 +269,81 @@
             const formData = new FormData();
             formData.append('file', blob, 'test.jpg');
             body = formData;
+            delete headers['Content-Type'];
+            console.log(`[checkApiStatus] Metadata: Sending POST with FormData (test.jpg).`);
         } else if (selectedEndpoint === '/api/qrcode') {
             method = 'POST';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ text: 'https://matic.eu.org/status-check' });
+            console.log(`[checkApiStatus] QRCode: Sending POST with JSON body.`);
         } else if (selectedEndpoint === '/api/translate') {
             method = 'POST';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ text: 'Hello', sourceLang: 'en', targetLang: 'id' });
+            console.log(`[checkApiStatus] Translate: Sending POST with JSON body.`);
         } else if (selectedEndpoint === '/api/hash') {
             method = 'POST';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ data: 'test data', algorithm: 'sha256' });
+            console.log(`[checkApiStatus] Hash: Sending POST with JSON body.`);
         } else if (selectedEndpoint === '/api/leet') {
             method = 'POST';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ text: 'Test Leet' });
+            console.log(`[checkApiStatus] Leet: Sending POST with JSON body.`);
         } else if (selectedEndpoint === '/api/currency') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?amount=1&from=USD&to=IDR`;
+            console.log(`[checkApiStatus] Currency: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/asciiart') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?text=test&font=Standard`;
+            console.log(`[checkApiStatus] ASCII Art: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/ssl') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?host=google.com`;
+            console.log(`[checkApiStatus] SSL: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/dns') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?domain=google.com`;
+            console.log(`[checkApiStatus] DNS: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/iplocator') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?ip=8.8.8.8`;
+            console.log(`[checkApiStatus] IP Locator: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/embed') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+            console.log(`[checkApiStatus] Embed: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/randomuser') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}`;
+            console.log(`[checkApiStatus] Random User: Sending GET.`);
         } else if (selectedEndpoint === '/api/shorten') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?url=https://example.com/long-url-to-shorten`;
+            console.log(`[checkApiStatus] Shorten: Sending GET with URL params.`);
         } else if (selectedEndpoint === '/api/whois') {
             method = 'GET';
             url = `${baseUrl}${selectedEndpoint}?url=https://google.com`;
+            console.log(`[checkApiStatus] Whois: Sending GET with URL params.`);
         } else { // Default for generative AI endpoints (Gemini, DeepSeek, LLaMA, Microsoft, NVIDIA)
             method = 'POST';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ prompt: 'Test connectivity.' });
+            console.log(`[checkApiStatus] AI Endpoint: Sending POST with JSON body.`);
         }
 
         res = await fetch(url, { method, headers: Object.keys(headers).length > 0 ? headers : undefined, body });
         
         responseTime = Math.round(performance.now() - start);
         isOnline = res.ok;
+        console.log(`[checkApiStatus] Fetch response for ${selectedEndpoint}: Status ${res.status}, OK: ${res.ok}, Time: ${responseTime}ms`);
 
       } catch (error) {
-        console.error(`Error checking ${selectedEndpoint}:`, error);
         responseTime = Math.round(performance.now() - start);
         isOnline = false;
+        console.error(`[checkApiStatus] Fatal error during check for ${selectedEndpoint}:`, error);
       }
 
       apiChecks[selectedEndpoint].push({ timestamp: new Date(), isOnline, responseTime });
@@ -381,13 +429,20 @@
     });
 
     // Initialization: Select the first endpoint automatically and start checks
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+        // userApiKey is initialized directly with STATUS_PAGE_API_KEY
+        // Make sure you have replaced "YOUR_STATUS_PAGE_API_KEY_HERE" above
+        if (!userApiKey || userApiKey === "YOUR_STATUS_PAGE_API_KEY_HERE") {
+            console.error("STATUS_PAGE_API_KEY is not set in status.html. Please replace 'YOUR_STATUS_PAGE_API_KEY_HERE' with your actual key in status.html.");
+            return;
+        }
+
         const firstButton = document.querySelector('#apiList button');
         if (firstButton) {
             firstButton.click();
         }
         setInterval(() => checkApiStatus(false), CHECK_INTERVAL);
-        fetchServerMetrics(); // Initial fetch for server metrics
+        setInterval(fetchServerMetrics, SERVER_METRICS_INTERVAL);
     });
   </script>
 </body>

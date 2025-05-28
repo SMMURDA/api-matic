@@ -28,22 +28,80 @@
     </div>
   </div>
 
+  <div class="container py-3">
+    <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+        <i class="bi bi-key-fill"></i>
+        <span>Your API Key : <strong id="userApiKeyDisplay">Loading...</strong></span>
+        <button class="btn btn-sm btn-outline-info ms-auto" id="copyApiKeyBtn"><i class="bi bi-clipboard"></i> Copy</button>
+    </div>
+  </div>
+
   <div class="container py-4">
     <div id="apiAccordion" class="accordion">
       </div>
   </div>
 
   <script>
-    // Daftar semua endpoint API yang memiliki file JSON dokumentasi
+    const API_KEY_STORAGE_KEY = 'matic_api_key';
+    let userApiKey = null;
+
     const endpointNames = [
       'embed', 'whois', 'shorten', 'randomuser', 'iplocator', 'docparser',
       'qrcode', 'deepseek', 'gemini', 'llama', 'microsoft', 'nvidia',
       'ssl', 'metadata', 'dns', 'translate', 'currency', 'asciiart', 'hash', 'leet'
     ];
 
-    /**
-     * Memuat semua dokumentasi endpoint API dan merendernya sebagai accordion.
-     */
+    async function getUserApiKey() {
+        let storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+        const apiKeyDisplayEl = document.getElementById('userApiKeyDisplay');
+        const copyApiKeyBtn = document.getElementById('copyApiKeyBtn');
+
+        if (storedKey) {
+            userApiKey = storedKey;
+            apiKeyDisplayEl.textContent = userApiKey;
+            console.log("API Key ditemukan di localStorage:", userApiKey);
+        } else {
+            apiKeyDisplayEl.textContent = 'Generating...';
+            console.log("API Key tidak ditemukan, menghasilkan yang baru...");
+            try {
+                const response = await fetch('/api/get-new-api-key');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.api_key) {
+                        userApiKey = data.api_key;
+                        localStorage.setItem(API_KEY_STORAGE_KEY, userApiKey);
+                        apiKeyDisplayEl.textContent = userApiKey;
+                        console.log("API Key baru dihasilkan:", userApiKey);
+                    } else {
+                        apiKeyDisplayEl.textContent = 'Error generating key: ' + (data.message || 'Unknown error.');
+                        console.error("Gagal mendapatkan API Key baru:", data);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    apiKeyDisplayEl.textContent = `Server error (${response.status}).`;
+                    console.error("Server error saat mendapatkan API Key:", response.status, response.statusText, errorText);
+                }
+            } catch (error) {
+                apiKeyDisplayEl.textContent = 'Network error.';
+                console.error("Network error saat mendapatkan API Key:", error);
+            }
+        }
+
+        if (copyApiKeyBtn) {
+            copyApiKeyBtn.addEventListener('click', () => {
+                if (userApiKey) {
+                    navigator.clipboard.writeText(userApiKey).then(() => {
+                        alert('API Key disalin ke clipboard!');
+                    }).catch(err => {
+                        console.error('Gagal menyalin API Key:', err);
+                        alert('Gagal menyalin. Silakan salin secara manual.');
+                    });
+                }
+            });
+        }
+    }
+
+
     async function loadAllEndpoints() {
       const apiAccordionContainer = document.getElementById('apiAccordion');
       apiAccordionContainer.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Memuat dokumentasi API...</p></div>';
@@ -55,9 +113,6 @@
               if (!res.ok) {
                 throw new Error(`Gagal memuat ${name}.json: ${res.statusText}`);
               }
-              // Handle JSON array response for hash.json (if it's still an array)
-              // Note: In a previous step, hash.json was an array. Assuming it's now a single object.
-              // If hash.json is still an array, you might need to adjust this.
               return res.json();
             })
             .then(data => ({ name, data }))
@@ -134,19 +189,11 @@
       }
     }
 
-    /**
-     * Merender satu kartu API sebagai item accordion Bootstrap.
-     * @param {string} name - Nama unik endpoint.
-     * @param {object} data - Data JSON dari file dokumentasi endpoint.
-     * @param {object} [options={}] - Objek opsi tambahan (misal: { fonts: [], algorithms: [] }).
-     * @returns {string} HTML string untuk item accordion.
-     */
     function renderApiCard(name, data, options = {}) {
       let inputFieldsHtml = '';
       let tryApiButtonHtml = '';
-      let responseSectionsHtml = ''; // Bagian baru untuk mengontrol tampilan respons
+      let responseSectionsHtml = '';
 
-      // Logika untuk menampilkan input fields berdasarkan nama endpoint
       if (name === 'docparser' || name === 'metadata') {
         inputFieldsHtml = `
           <div class="mb-3">
@@ -270,7 +317,6 @@
         `;
       }
 
-      // Hanya tampilkan bagian "Try it out" jika ada inputField
       if (inputFieldsHtml.trim() !== '<div class="mb-3"><p class="text-muted">Endpoint ini tidak memerlukan input.</p></div>') {
         tryApiButtonHtml = `
           <div class="d-flex align-items-center gap-2 mb-3">
@@ -281,8 +327,6 @@
         `;
       }
 
-      // === Logika untuk menampilkan bagian respons ===
-      // Untuk asciiart, kita hanya menampilkan "Hasil Respons" dan "Contoh Curl"
       if (name === 'asciiart') {
           responseSectionsHtml = `
               <h6 class="fw-semibold">Hasil Respons:</h6>
@@ -342,8 +386,6 @@
               <pre><code class="language-json">${JSON.stringify(data.response, null, 2)}</code></pre>
           `;
       }
-      // =========================================================
-
 
       return `
         <div class="accordion-item">
@@ -371,11 +413,8 @@
       `;
     }
 
-    /**
-     * Mengirim request API untuk endpoint yang dipilih.
-     * @param {string} name - Nama unik endpoint.
-     */
     async function tryApi(name) {
+      console.log(`[tryApi] Memulai untuk endpoint: ${name}`);
       const output = document.getElementById(`output-${name}`);
       const image = document.getElementById(`image-${name}`);
       const download = document.getElementById(`download-${name}`);
@@ -388,42 +427,63 @@
       download?.classList.add('d-none');
       loading.classList.remove('d-none');
       duration.textContent = '';
+      console.log(`[tryApi] UI reset untuk ${name}. Loading spinner aktif.`);
+
+      const currentApiKey = userApiKey; 
+      if (!currentApiKey) {
+          output.textContent = 'API Key tidak ditemukan. Silakan muat ulang halaman.';
+          loading.classList.add('d-none');
+          console.error('[tryApi] Error: API Key tidak tersedia.');
+          return;
+      }
+      console.log(`[tryApi] Menggunakan API Key: ${currentApiKey.substring(0, 8)}...`);
 
       try {
         let res;
         let dataToDisplay;
+        let method = 'GET';
+        let body = null;
+        let headers = {
+            'Authorization': `Bearer ${currentApiKey}`
+        };
+        let url = `/api/${name}`;
+
+        console.log(`[tryApi] Memproses logika untuk ${name}`);
 
         if (name === 'docparser' || name === 'metadata') {
           const input = document.getElementById(`input-${name}`);
           const file = input?.files?.[0];
+          console.log(`[tryApi-${name}] File input:`, file);
           if (!file) {
             output.textContent = 'Pilih file terlebih dahulu.';
+            loading.classList.add('d-none');
+            console.log(`[tryApi-${name}] Error: File tidak dipilih.`);
             return;
           }
           const formData = new FormData();
           formData.append('file', file);
-          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
-          dataToDisplay = await res.json();
+          method = 'POST';
+          body = formData;
+          delete headers['Content-Type']; 
+          console.log(`[tryApi-${name}] Mengirim POST dengan FormData.`);
         } else if (name === 'randomuser') {
-          res = await fetch(`/api/${name}`);
-          dataToDisplay = await res.json();
+          console.log(`[tryApi-${name}] Mengirim GET (tidak ada input).`);
         } else if (['deepseek', 'llama', 'microsoft', 'nvidia'].includes(name)) {
           const input = document.getElementById(`input-${name}`);
           const prompt = input?.value.trim();
           const sessionInput = document.getElementById(`session-${name}`);
           const session = sessionInput?.value.trim();
+          console.log(`[tryApi-${name}] Prompt: "${prompt}", Session: "${session}"`);
           if (!prompt) {
             output.textContent = 'Masukkan prompt.';
+            loading.classList.add('d-none');
+            console.log(`[tryApi-${name}] Error: Prompt kosong.`);
             return;
           }
-          const body = { prompt };
-          if (session) body.session = session;
-          res = await fetch(`/api/${name}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          dataToDisplay = await res.json();
+          method = 'POST';
+          headers['Content-Type'] = 'application/json';
+          body = JSON.stringify({ prompt, session });
+          console.log(`[tryApi-${name}] Mengirim POST dengan JSON body.`);
         } else if (name === 'gemini') {
           const input = document.getElementById(`input-${name}`);
           const prompt = input?.value.trim();
@@ -431,16 +491,21 @@
           const imageFile = imageInput?.files?.[0];
           const sessionInput = document.getElementById(`session-${name}`);
           const session = sessionInput?.value.trim();
+          console.log(`[tryApi-${name}] Prompt: "${prompt}", Image: ${imageFile ? 'Ada' : 'Tidak Ada'}, Session: "${session}"`);
           if (!prompt) {
             output.textContent = 'Masukkan prompt.';
+            loading.classList.add('d-none');
+            console.log(`[tryApi-${name}] Error: Prompt kosong.`);
             return;
           }
+          method = 'POST';
           const formData = new FormData();
           formData.append('prompt', prompt);
           if (imageFile) formData.append('image', imageFile);
           if (session) formData.append('session', session);
-          res = await fetch(`/api/${name}`, { method: 'POST', body: formData });
-          dataToDisplay = await res.json();
+          body = formData;
+          delete headers['Content-Type']; 
+          console.log(`[tryApi-${name}] Mengirim POST dengan FormData (prompt + image).`);
         } else if (name === 'translate') {
             const textInput = document.getElementById(`input-text-${name}`);
             const sourceLangInput = document.getElementById(`input-sourceLang-${name}`);
@@ -449,19 +514,18 @@
             const text = textInput?.value.trim();
             const sourceLang = sourceLangInput?.value.trim();
             const targetLang = targetLangInput?.value.trim();
+            console.log(`[tryApi-${name}] Text: "${text}", Source: "${sourceLang}", Target: "${targetLang}"`);
 
             if (!text || !sourceLang || !targetLang) {
                 output.textContent = 'Semua input (Teks, Bahasa Sumber, Bahasa Tujuan) wajib diisi.';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Input terjemahan tidak lengkap.`);
                 return;
             }
-
-            const body = { text, sourceLang, targetLang };
-            res = await fetch(`/api/${name}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            dataToDisplay = await res.json();
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ text, sourceLang, targetLang });
+            console.log(`[tryApi-${name}] Mengirim POST dengan JSON body.`);
         } else if (name === 'currency') {
             const amountInput = document.getElementById(`input-amount-${name}`);
             const fromInput = document.getElementById(`input-from-${name}`);
@@ -470,38 +534,41 @@
             const amount = amountInput?.value.trim();
             const from = fromInput?.value.trim();
             const to = toInput?.value.trim();
+            console.log(`[tryApi-${name}] Amount: "${amount}", From: "${from}", To: "${to}"`);
 
             if (!amount || !from || !to) {
                 output.textContent = 'Semua input (Jumlah, Dari Mata Uang, Ke Mata Uang) wajib diisi.';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Input mata uang tidak lengkap.`);
                 return;
             }
-
             if (isNaN(parseFloat(amount))) {
                 output.textContent = 'Jumlah harus berupa angka yang valid.';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Jumlah bukan angka.`);
                 return;
             }
-
-            res = await fetch(`/api/${name}?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-            dataToDisplay = await res.json();
+            url = `/api/${name}?amount=${encodeURIComponent(amount)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+            console.log(`[tryApi-${name}] Mengirim GET dengan URL params.`);
         } else if (name === 'asciiart') {
             const textInput = document.getElementById(`input-text-${name}`);
             const fontSelect = document.getElementById(`input-font-${name}`);
 
             const text = textInput?.value.trim();
             const font = fontSelect?.value.trim();
+            console.log(`[tryApi-${name}] Text: "${text}", Font: "${font}"`);
 
             if (!text) {
                 output.textContent = 'Parameter "Teks" wajib diisi.';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Teks ASCII Art kosong.`);
                 return;
             }
-
-            let apiUrl = `/api/${name}?text=${encodeURIComponent(text)}`;
+            url = `/api/${name}?text=${encodeURIComponent(text)}`;
             if (font) {
-                apiUrl += `&font=${encodeURIComponent(font)}`;
+                url += `&font=${encodeURIComponent(font)}`;
             }
-
-            res = await fetch(apiUrl);
-            dataToDisplay = await res.text();
+            console.log(`[tryApi-${name}] Mengirim GET dengan URL params.`);
         } else if (name === 'hash') {
             const dataInput = document.getElementById(`input-data-${name}`);
             const algorithmSelect = document.getElementById(`input-algorithm-${name}`);
@@ -510,24 +577,18 @@
             const dataToHash = dataInput?.value.trim();
             const algorithm = algorithmSelect?.value.trim();
             const encoding = encodingSelect?.value.trim();
+            console.log(`[tryApi-${name}] Data: "${dataToHash}", Algo: "${algorithm}", Encoding: "${encoding}"`);
 
             if (!dataToHash || !algorithm) {
                 output.textContent = 'Parameter "Data" dan "Algoritma Hash" wajib diisi.';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Input hash tidak lengkap.`);
                 return;
             }
-
-            const body = {
-                data: dataToHash,
-                algorithm: algorithm,
-                encoding: encoding || 'hex'
-            };
-
-            res = await fetch(`/api/${name}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            dataToDisplay = await res.json();
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
+            body = JSON.stringify({ data: dataToHash, algorithm: algorithm, encoding: encoding || 'hex' });
+            console.log(`[tryApi-${name}] Mengirim POST dengan JSON body.`);
         } else if (name === 'leet') {
             const textInput = document.getElementById(`input-text-${name}`);
             const leetTextInput = document.getElementById(`input-leet_text-${name}`);
@@ -536,60 +597,79 @@
             const text = textInput?.value.trim();
             const leet_text = leetTextInput?.value.trim();
             const strictness = strictnessSelect?.value.trim();
+            console.log(`[tryApi-${name}] Text: "${text}", Leet Text: "${leet_text}", Strictness: "${strictness}"`);
 
             if ((!text && !leet_text) || (text && leet_text)) {
                 output.textContent = 'Hanya boleh mengisi satu input: "Teks untuk Encode" ATAU "Teks Leet Speak untuk Decode".';
+                loading.classList.add('d-none');
+                console.log(`[tryApi-${name}] Error: Input leet ambigu.`);
                 return;
             }
 
-            let body;
+            method = 'POST';
+            headers['Content-Type'] = 'application/json';
             if (text) {
-                body = { text: text };
-                if (strictness) body.strictness = strictness;
+                body = JSON.stringify({ text: text, strictness: strictness });
+                console.log(`[tryApi-${name}] Mengirim POST untuk Encode.`);
             } else {
-                body = { leet_text: leet_text };
+                body = JSON.stringify({ leet_text: leet_text });
+                console.log(`[tryApi-${name}] Mengirim POST untuk Decode.`);
             }
-
-            res = await fetch(`/api/${name}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            dataToDisplay = await res.json();
-
         }
         else {
           const input = document.getElementById(`input-${name}`);
           const value = input?.value.trim();
+          console.log(`[tryApi-${name}] General input value: "${value}"`);
           if (!value) {
             output.textContent = 'Masukkan input.';
+            loading.classList.add('d-none');
+            console.log(`[tryApi-${name}] Error: Input umum kosong.`);
             return;
           }
-          const body = name === 'qrcode' ? JSON.stringify({ text: value }) : null;
           let paramKey = 'url';
           if (name === 'iplocator') paramKey = 'ip';
           else if (name === 'ssl') paramKey = 'host';
           else if (name === 'dns') paramKey = 'domain';
 
-          res = await fetch(`/api/${name}?${paramKey}=${encodeURIComponent(value)}`, {
-            method: name === 'qrcode' ? 'POST' : 'GET',
-            headers: name === 'qrcode' ? { 'Content-Type': 'application/json' } : undefined,
-            body
-          });
-          dataToDisplay = await res.json();
+          url = `/api/${name}?${paramKey}=${encodeURIComponent(value)}`;
+          console.log(`[tryApi-${name}] Mengirim GET dengan URL params.`);
         }
+
+        console.log(`[tryApi] Final fetch config: URL=${url}, Method=${method}, Headers=${JSON.stringify(headers)}, Body=${body instanceof FormData ? 'FormData' : JSON.stringify(body)}`);
+        res = await fetch(url, { method, headers: headers, body: body });
+
+        console.log(`[tryApi] Fetch response received. Status: ${res.status}`);
 
         const time = performance.now() - start;
         duration.textContent = `(${Math.round(time)} ms)`;
         
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`[tryApi] Fetch response not OK (${res.status}):`, errorText);
+            try {
+                const errorJson = JSON.parse(errorText);
+                output.textContent = JSON.stringify(errorJson, null, 2);
+            } catch {
+                output.textContent = `Error: ${res.status} ${res.statusText}\n${errorText}`;
+            }
+            output.classList.remove('language-text');
+            output.classList.add('language-json');
+            Prism.highlightElement(output);
+            return;
+        }
+
         if (name === 'asciiart') {
+            dataToDisplay = await res.text();
             output.classList.remove('language-json');
             output.classList.add('language-text');
             output.textContent = dataToDisplay;
+            console.log(`[tryApi-${name}] Menampilkan respons teks.`);
         } else {
+            dataToDisplay = await res.json();
             output.classList.remove('language-text');
             output.classList.add('language-json');
             output.textContent = JSON.stringify(dataToDisplay, null, 2);
+            console.log(`[tryApi-${name}] Menampilkan respons JSON.`);
         }
         Prism.highlightElement(output);
 
@@ -599,26 +679,20 @@
           image.classList.remove('d-none');
           download.href = dataToDisplay.dataUrl;
           download.classList.remove('d-none');
+          console.log(`[tryApi-${name}] QR Code image ditampilkan.`);
         }
       } catch (error) {
-        console.error("Error calling API:", error);
+        console.error("[tryApi] Fatal Error:", error);
         output.textContent = `Gagal memuat API: ${error.message || 'Terjadi kesalahan tidak dikenal.'}`;
-        if (name === 'asciiart') {
-            output.classList.remove('language-json');
-            output.classList.add('language-text');
-        } else {
-            output.classList.add('language-json');
-        }
+        output.classList.remove('language-json');
+        output.classList.add('language-text');
         Prism.highlightElement(output);
       } finally {
         loading.classList.add('d-none');
+        console.log(`[tryApi] Selesai untuk endpoint: ${name}. Loading spinner dinonaktifkan.`);
       }
     }
 
-    /**
-     * Menyalin teks respons ke clipboard.
-     * @param {string} name - Nama unik endpoint.
-     */
     function copyResponse(name) {
       const output = document.getElementById(`output-${name}`).textContent;
       const textarea = document.createElement('textarea');
@@ -635,11 +709,6 @@
       document.body.removeChild(textarea);
     }
 
-    /**
-     * Menyalin perintah curl ke clipboard.
-     * @param {string} name - Nama unik endpoint.
-     * @param {string} [type=''] - Tipe curl untuk Leet (encode/decode).
-     */
     function copyCurl(name, type = '') {
       let curlText;
       if (name === 'leet' && type) {
@@ -662,7 +731,6 @@
       document.body.removeChild(textarea);
     }
 
-    // --- Logika Dark Mode ---
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-bs-theme', theme);
       const darkSwitch = document.getElementById('darkSwitch');
@@ -672,8 +740,9 @@
       localStorage.setItem('theme', theme);
     }
 
-    // Periksa preferensi tema saat halaman dimuat
     document.addEventListener('DOMContentLoaded', () => {
+      getUserApiKey();
+
       const savedTheme = localStorage.getItem('theme');
       if (savedTheme) {
         applyTheme(savedTheme);
