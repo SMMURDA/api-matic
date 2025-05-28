@@ -8,5 +8,5 @@
     "status": "success",
     "response": "Halo! Saya adalah model bahasa dari NVIDIA. Apa yang bisa saya bantu?"
   },
-  "curl": "curl -X POST https://matic.eu.org/api/nvidia \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"prompt\": \"Jelaskan teknologi RTX dari NVIDIA\"}'"
+  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/nvidia' \\\n  -d '{\"prompt\": \"Jelaskan teknologi RTX dari NVIDIA\"}'"
 }

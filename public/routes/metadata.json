@@ -32,5 +32,5 @@
     },
     "DateTimeOriginal": "2024:11:12 14:33:21"
   },
-  "curl": "curl -X POST https://matic.eu.org/api/metadata \\\n  -F \"file=@/path/to/your/file.jpg\""
+  "curl": "curl -X POST \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/metadata' \\\n  -F \"file=@/path/to/your/file.jpg\""
 }

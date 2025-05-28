@@ -8,5 +8,5 @@
     "success": true,
     "response": "This is the result from Microsoft's Copilot model."
   },
-  "curl": "curl -X POST https://matic.eu.org/api/microsoft -H \"Content-Type: application/json\" -d '{\"prompt\": \"What can you do?\"}'"
+  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/microsoft' \\\n  -d '{\"prompt\": \"What can you do?\"}'"
 }

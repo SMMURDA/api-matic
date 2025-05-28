@@ -17,6 +17,5 @@
     "exchangeRate": 16234.50,
     "convertedAmount": 1623450.00
   },
-  "curl": "curl -X GET 'https://matic.eu.org/api/currency?amount=100&from=USD&to=IDR'"
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/currency?amount=100&from=USD&to=IDR'"
 }
-

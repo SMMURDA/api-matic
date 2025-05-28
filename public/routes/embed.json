@@ -16,6 +16,5 @@
       }
     ]
   },
-  "curl": "curl 'https://matic.eu.org/api/embed?url=https://example.com'"
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/embed?url=https://example.com'"
 }
-

@@ -32,5 +32,5 @@
     "org": "Google LLC",
     "hostname": "dns.google"
   },
-  "curl": "curl https://matic.eu.org/api/iplocator?ip=8.8.8.8"
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/iplocator?ip=8.8.8.8'"
 }

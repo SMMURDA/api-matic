@@ -8,5 +8,5 @@
     "response": "This is the answer from the model.",
     "session": "cltxy5m1d0001mr0f45fovk0z"
   },
-  "curl": "curl -X POST https://matic.eu.org/api/deepseek \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"prompt\": \"What is DeepSeek AI?\", \"session\": \"cltxy5m1d0001mr0f45fovk0z\"}'"
+  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/deepseek' \\\n  -d '{\"prompt\": \"What is DeepSeek AI?\", \"session\": \"cltxy5m1d0001mr0f45fovk0z\"}'"
 }

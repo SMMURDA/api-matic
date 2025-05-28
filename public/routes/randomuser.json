@@ -29,6 +29,5 @@
       "website": "https://example.com"
     }
   },
-  "curl": "curl https://matic.eu.org/api/randomuser"
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/randomuser'"
 }
-

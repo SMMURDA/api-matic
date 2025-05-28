@@ -8,5 +8,5 @@
     "session": "default",
     "response": "Artificial intelligence is a field of computer science focused on creating systems that can perform tasks that typically require human intelligence."
   },
-  "curl": "curl -X POST https://matic.eu.org/api/llama -H \"Content-Type: application/json\" -d '{\"prompt\": \"What is artificial intelligence?\"}'"
+  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/llama' \\\n  -d '{\"prompt\": \"What is artificial intelligence?\"}'"
 }

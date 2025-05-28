@@ -30,5 +30,5 @@
     "response": "This is Gemini's response based on the prompt and/or image.",
     "session": "d3087e60-4019-4dd3-b2d2-3ccad1c22b15"
   },
-  "curl": "curl -X POST https://matic.eu.org/api/gemini \\\n  -F \"prompt=What is shown in this image?\" \\\n  -F \"image=@/path/to/image.jpg\""
+  "curl": "curl -X POST \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/gemini' \\\n  -F \"prompt=What is shown in this image?\" \\\n  -F \"image=@/path/to/image.jpg\""
 }

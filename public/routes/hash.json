@@ -33,5 +33,5 @@
     "hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b2779679204017",
     "encoding": "hex"
   },
-  "curl": "curl -X POST -H \"Content-Type: application/json\" -d '{\"data\":\"Hello World\",\"algorithm\":\"sha256\",\"encoding\":\"hex\"}' https://matic.eu.org/api/hash"
+  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/hash' \\\n  -d '{\"data\":\"Hello World\",\"algorithm\":\"sha256\",\"encoding\":\"hex\"}'"
 }

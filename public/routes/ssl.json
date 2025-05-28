@@ -14,5 +14,5 @@
     "days_remaining": 56,
     "protocol": "TLSv1.3"
   },
-  "curl": "curl \"https://matic.eu.org/api/ssl?host=example.com\""
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/ssl?host=example.com'"
 }

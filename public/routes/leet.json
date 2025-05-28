@@ -36,7 +36,7 @@
     "original_text": "Hello World",
     "leet_text": "H3110 W0r1d"
   },
-  "curl_encode": "curl -X POST -H \"Content-Type: application/json\" -d '{\"text\": \"Hello World\", \"strictness\": \"medium\"}' https://matic.eu.org/api/leet",
+  "curl_encode": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/leet' \\\n  -d '{\"text\": \"Hello World\", \"strictness\": \"medium\"}'",
   "example_request_body_decode": {
     "leet_text": "H3110 W0r1d"
   },
@@ -46,7 +46,5 @@
     "original_leet_text": "H3110 W0r1d",
     "decoded_text": "hello world"
   },
-  "curl_decode": "curl -X POST -H \"Content-Type: application/json\" -d '{\"leet_text\": \"H3110 W0r1d\"}' https://matic.eu.org/api/leet"
+  "curl_decode": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/leet' \\\n  -d '{\"leet_text\": \"H3110 W0r1d\"}'"
 }
-
-

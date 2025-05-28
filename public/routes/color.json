@@ -15,7 +15,6 @@
       "convertedFormat": "hex",
       "convertedValue": "#ff0000"
     },
-    "curl": "curl -X GET 'https://matic.eu.org/api/color/convert?colorValue=%2300ff00&toFormat=hsl'"
+    "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/color/convert?colorValue=%2300ff00&toFormat=hsl'"
   }
 ]
-

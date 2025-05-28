@@ -9,5 +9,5 @@
     "original_url": "https://contoh.com",
     "short_url": "https://bit.ly/abc123"
   },
-  "curl": "curl 'https://matic.eu.org/api/shorten?url=https://contoh.com'"
+  "curl": "curl -X GET \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/shorten?url=https://contoh.com'"
 }

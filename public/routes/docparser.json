@@ -10,5 +10,5 @@
     "mimetype": "application/pdf",
     "text": "The extracted text from the file will appear here..."
   },
-  "curl": "curl -X POST https://matic.eu.org/api/docparser \\\n  -F \"file=@/path/to/your/document.pdf\""
+  "curl": "curl -X POST \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/docparser' \\\n  -F \"file=@/path/to/your/document.pdf\""
 }
