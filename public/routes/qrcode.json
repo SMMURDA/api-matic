@@ -1,11 +1,13 @@
 {
   "title": "QR Code Generator",
-  "description": "Generates a base64-encoded QR Code from the provided text or URL.",
-  "method": "POST",
+  "description": "Menghasilkan QR Code (base64-encoded) dari teks atau URL yang diberikan.",
+  "method": "GET",
   "path": "/api/qrcode",
-  "placeholder": "Enter text or URL",
+  "placeholder": "Masukkan teks atau URL",
   "response": {
-    "dataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+    "success": true,
+    "dataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+    "message": "QR Code berhasil dibuat."
   },
-  "curl": "curl -X POST \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/qrcode' \\\n  -d '{\"text\": \"https://matic.eu.org\"}'"
+  "curl": "curl -X GET \"https://matic.eu.org/api/qrcode?url=https%3A%2F%2Fmatic.eu.org\" -H \"Authorization: Bearer YOUR_API_KEY\""
 }

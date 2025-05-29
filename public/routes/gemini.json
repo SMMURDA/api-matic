@@ -1,34 +1,34 @@
 {
-  "title": "Gemini Chat",
-  "description": "Interact with Google's Gemini 2.0 model. Supports both text and image input.",
+  "title": "Google Gemini AI",
+  "description": "Berinteraksi langsung dengan model Google Gemini 1.5 Flash Latest (atau model yang Anda konfigurasikan di GOOGLE_GEMINI_API_URL pada server) untuk percakapan atau analisis multimodal. Mendukung prompt teks dan/atau unggahan gambar.",
   "method": "POST",
   "path": "/api/gemini",
-  "placeholder": "Enter your question...",
-  "fields": [
+  "parameters": [
     {
       "name": "prompt",
-      "type": "text",
+      "type": "string",
+      "description": "Teks prompt untuk AI. Diperlukan jika tidak ada gambar yang diunggah.",
       "required": false,
-      "label": "Prompt"
-    },
-    {
-      "name": "session",
-      "type": "text",
-      "required": false,
-      "label": "Session ID (optional)"
+      "example": "Tulis puisi tentang kucing."
     },
     {
       "name": "image",
       "type": "file",
+      "description": "Opsional. Gambar untuk analisis multimodal (JPG, PNG, WEBP, GIF, dll. yang didukung oleh Gemini). Diperlukan jika tidak ada prompt teks.",
+      "required": false
+    },
+    {
+      "name": "session",
+      "type": "string",
+      "description": "Opsional. ID sesi untuk melanjutkan percakapan atau menjaga konteks.",
       "required": false,
-      "accept": "image/*",
-      "label": "Upload Image (optional)"
+      "example": "sesiUnik123"
     }
   ],
   "response": {
     "success": true,
-    "response": "This is Gemini's response based on the prompt and/or image.",
-    "session": "d3087e60-4019-4dd3-b2d2-3ccad1c22b15"
+    "response": "Ini adalah contoh balasan teks dari Gemini AI...",
+    "session": "id_sesi_yang_dihasilkan_atau_diteruskan"
   },
-  "curl": "curl -X POST \\\n  -H \"Authorization: Bearer YOUR_ACCESS_TOKEN\" \\\n  'https://matic.eu.org/api/gemini' \\\n  -F \"prompt=What is shown in this image?\" \\\n  -F \"image=@/path/to/image.jpg\""
+  "curl": "curl -X POST https://matic.eu.org/api/gemini \\\n  -H \"Authorization: Bearer YOUR_API_KEY\" \\\n  -F \"prompt=Jelaskan gambar ini.\" \\\n  -F \"image=@/path/to/your/image.jpg\""
 }
