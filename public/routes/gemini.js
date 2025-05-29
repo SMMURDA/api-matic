@@ -1,34 +1,23 @@
 const express = require('express');
 const router = express.Router();
-// const fs = require('fs'); // Tidak digunakan di sini, bisa dihapus jika tidak ada keperluan lain
-// const path = require('path'); // Tidak digunakan di sini, bisa dihapus jika tidak ada keperluan lain
 const fetch = require('node-fetch');
-const multer = require('multer'); // Import multer
+const multer = require('multer');
 
 const GOOGLE_GEMINI_API_KEY = process.env.GOOGLE_GEMINI_API_KEY;
-// Pastikan URL ini benar dan modelnya tersedia untuk API key Anda
-const GOOGLE_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'; // Menggunakan model gemini-1.5-flash-latest sebagai contoh, pastikan ini sesuai
+const GOOGLE_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 const sessions = {};
 
-// Konfigurasi Multer
-// Kita akan menyimpan file di memory buffer untuk kemudian dikonversi ke base64
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // Batas ukuran file 10MB, sesuaikan jika perlu
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Terapkan middleware multer di sini
-// 'image' adalah nama field dari FormData di index.html: formData.append('image', imageFile);
 router.post('/', upload.single('image'), async (req, res) => {
-    // Setelah multer, req.body akan berisi field teks, dan req.file akan berisi info file
     const prompt = req.body.prompt;
-    const imageFile = req.file; // req.file akan diisi oleh multer jika ada file 'image'
+    const imageFile = req.file;
     const sessionId = req.body.session || createUniqueSessionId();
-
-    // Baris 14 Anda yang error ('const prompt = req.body.prompt;') sekarang seharusnya bekerja
-    // karena req.body sudah diparsing oleh multer (untuk field teks)
 
     if (!prompt && !imageFile) {
         return res.status(400).json({ success: false, message: 'Prompt atau image wajib diisi.' });
@@ -47,7 +36,6 @@ router.post('/', upload.single('image'), async (req, res) => {
     }
 
     if (imageFile) {
-        // Pastikan imageFile ada dan memiliki buffer
         if (!imageFile.buffer || !imageFile.mimetype) {
             return res.status(400).json({ success: false, message: 'Data gambar tidak valid atau tidak lengkap.' });
         }
@@ -59,20 +47,17 @@ router.post('/', upload.single('image'), async (req, res) => {
     if (userParts.length > 0) {
         currentMessages.push({ role: 'user', parts: userParts });
     } else {
-        // Seharusnya tidak terjadi jika validasi di awal sudah benar
         return res.status(400).json({ success: false, message: 'Tidak ada input yang bisa diproses.' });
     }
 
-
-    // Struktur 'contents' untuk Google API
     const googleApiContents = currentMessages.map(msg => {
         if (msg.role === 'user') {
             return { role: 'user', parts: msg.parts };
-        } else if (msg.role === 'assistant' || msg.role === 'model') { // API mengharapkan 'model' bukan 'assistant'
+        } else if (msg.role === 'assistant' || msg.role === 'model') {
             return { role: 'model', parts: [{ text: msg.content }] };
         }
-        return msg; // Sebaiknya filter atau pastikan semua message punya struktur yang benar
-    }).filter(msg => msg && msg.parts && msg.parts.length > 0); // Pastikan parts tidak kosong
+        return msg;
+    }).filter(msg => msg && msg.parts && msg.parts.length > 0);
 
     if (googleApiContents.length === 0) {
         return res.status(400).json({ success: false, message: 'Tidak ada konten yang valid untuk dikirim ke API.' });
@@ -81,13 +66,6 @@ router.post('/', upload.single('image'), async (req, res) => {
     try {
         const payload = {
             contents: googleApiContents,
-            // Anda bisa menambahkan generationConfig di sini jika perlu
-            // generationConfig: {
-            //   temperature: 0.7,
-            //   topK: 1,
-            //   topP: 1,
-            //   maxOutputTokens: 2048,
-            // },
         };
 
         const apiResponse = await fetch(`${GOOGLE_GEMINI_API_URL}?key=${GOOGLE_GEMINI_API_KEY}`, {
@@ -99,21 +77,19 @@ router.post('/', upload.single('image'), async (req, res) => {
         const responseData = await apiResponse.json();
 
         if (apiResponse.ok) {
-            // Struktur respons Gemini bisa bervariasi, pastikan Anda mengaksesnya dengan benar
             if (responseData.candidates && responseData.candidates.length > 0 &&
                 responseData.candidates[0].content && responseData.candidates[0].content.parts &&
                 responseData.candidates[0].content.parts.length > 0 && responseData.candidates[0].content.parts[0].text) {
 
                 const reply = responseData.candidates[0].content.parts[0].text;
 
-                currentMessages.push({ role: 'model', content: reply }); // Simpan sebagai 'model'
+                currentMessages.push({ role: 'model', content: reply });
                 sessions[sessionId] = currentMessages;
 
                 res.json({
                     success: true,
                     response: reply,
                     session: sessionId,
-                    // full_response: responseData // Bisa berguna untuk debugging, tapi opsional untuk klien
                 });
             } else {
                 console.warn('Google Gemini API merespons tanpa kandidat yang valid atau teks balasan:', responseData);

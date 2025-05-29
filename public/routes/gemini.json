@@ -1,6 +1,6 @@
 {
   "title": "Google Gemini AI",
-  "description": "Berinteraksi langsung dengan model Google Gemini 1.5 Flash Latest (atau model yang Anda konfigurasikan di GOOGLE_GEMINI_API_URL pada server) untuk percakapan atau analisis multimodal. Mendukung prompt teks dan/atau unggahan gambar.",
+  "description": "Endpoint Google Gemini AI untuk percakapan dan analisis multimodal (teks dan/atau gambar).",
   "method": "POST",
   "path": "/api/gemini",
   "parameters": [
