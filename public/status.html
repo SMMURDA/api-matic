@@ -272,7 +272,7 @@
             delete headers['Content-Type'];
             console.log(`[checkApiStatus] Metadata: Sending POST with FormData (test.jpg).`);
         } else if (selectedEndpoint === '/api/qrcode') {
-            method = 'POST';
+            method = 'GET';
             headers['Content-Type'] = 'application/json';
             body = JSON.stringify({ text: 'https://matic.eu.org/status-check' });
             console.log(`[checkApiStatus] QRCode: Sending POST with JSON body.`);
