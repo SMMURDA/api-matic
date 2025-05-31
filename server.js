@@ -75,12 +75,12 @@ const serverMetrics = {
 
 const generateCustomApiKey = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const length = 48;
+    const length = 18;
     let result = '';
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    const prefix = 'pk-';
+    const prefix = 'matic-';
     return prefix + result;
 };
 
@@ -156,7 +156,7 @@ const authenticateUserApiKey = async (req, res, next) => {
 
 const apiLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    max: 10,
+    max: 100,
     message: {
         success: false,
         message: 'Too many requests from this IP, please try again after 10 minutes.'
@@ -275,4 +275,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
 

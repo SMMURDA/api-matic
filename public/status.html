@@ -109,11 +109,11 @@
     const CHECK_INTERVAL = 60000;
     const SERVER_METRICS_INTERVAL = 5000;
     const baseUrl = '';
-    const API_KEY_STORAGE_KEY = 'matic_api_key_status'; 
+    const API_KEY_STORAGE_KEY = 'matic_api_key_status';  
     
     // PENTING: Ganti ini dengan STATUS_PAGE_API_KEY yang Anda set di file .env server
     // Kunci ini akan digunakan untuk semua pengecekan status dan dikecualikan dari rate limit
-    let userApiKey = "MaticAPI"; 
+    let userApiKey = "MaticAPI";  
 
     let selectedEndpoint = '';
     let apiChecks = {};
@@ -134,13 +134,13 @@
     const incidentListEl = document.getElementById('incidentList');
     const refreshButtonEl = document.getElementById('refreshButton');
     // apiKeyDisplayEl dan copyApiKeyBtn tidak lagi dibutuhkan karena elemennya dihapus dari HTML
-    // const apiKeyDisplayEl = document.getElementById('userApiKeyDisplay'); 
-    // const copyApiKeyBtn = document.getElementById('copyApiKeyBtn'); 
+    // const apiKeyDisplayEl = document.getElementById('userApiKeyDisplay');  
+    // const copyApiKeyBtn = document.getElementById('copyApiKeyBtn');  
 
     document.querySelectorAll('#apiList button[data-endpoint]').forEach(btn => {
-        const endpoint = btn.getAttribute('data-endpoint');
-        apiChecks[endpoint] = [];
-        incidents[endpoint] = [];
+      const endpoint = btn.getAttribute('data-endpoint');
+      apiChecks[endpoint] = [];
+      incidents[endpoint] = [];
     });
 
     apiListEl.addEventListener('click', (e) => {
@@ -172,7 +172,7 @@
         d.innerHTML = `
           <div class="incident-description">${inc.description}</div>
           <div class="incident-timestamp">
-            ${inc.startTime.toLocaleString()} - 
+            ${inc.startTime.toLocaleString()} -  
             ${inc.resolved ? inc.endTime.toLocaleString() : 'Ongoing'}
           </div>
           ${inc.resolved ? `<div class="incident-duration">Duration: ${inc.duration} seconds</div>` : ''}
@@ -243,6 +243,7 @@
       let isOnline = false, responseTime = 0;
 
       try {
+<<<<<<< HEAD
         let res;
         let method = 'GET';
         let body = null;
@@ -339,15 +340,113 @@
         responseTime = Math.round(performance.now() - start);
         isOnline = res.ok;
         console.log(`[checkApiStatus] Fetch response for ${selectedEndpoint}: Status ${res.status}, OK: ${res.ok}, Time: ${responseTime}ms`);
+=======
+          let res;
+          let method = 'GET';
+          let body = null;
+          let headers = {
+              'Authorization': `Bearer ${userApiKey}`
+          };
+          let url = `${baseUrl}${selectedEndpoint}`;
+
+          console.log(`[checkApiStatus] Preparing request for ${selectedEndpoint}. URL: ${url}, Method: ${method}, Headers: ${JSON.stringify(headers)}`);
+
+          if (selectedEndpoint === '/api/docparser') {
+              method = 'POST';
+              const textData = 'This is a test text file for docparser.';
+              const blob = new Blob([textData], { type: 'text/plain' });
+              const formData = new FormData();
+              formData.append('file', blob, 'test.txt');
+              body = formData;
+              delete headers['Content-Type'];
+              console.log(`[checkApiStatus] DocParser: Sending POST with FormData (test.txt).`);
+          } else if (selectedEndpoint === '/api/metadata') {
+              method = 'POST';
+              const jpgData = atob('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQoLCwsmDg0NDgwNDhEODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg//wAARCAABAAEDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAC//EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AfwA/AAH/2Q==');
+              const blob = new Blob([Uint8Array.from(jpgData.split('').map(char => char.charCodeAt(0)))], { type: 'image/jpeg' });
+              const formData = new FormData();
+              formData.append('file', blob, 'test.jpg');
+              body = formData;
+              delete headers['Content-Type'];
+              console.log(`[checkApiStatus] Metadata: Sending POST with FormData (test.jpg).`);
+          } else if (selectedEndpoint === '/api/qrcode') {
+              method = 'GET';
+              // Mengubah parameter 'text' menjadi 'url' sesuai contoh curl
+              url = `${baseUrl}${selectedEndpoint}?url=${encodeURIComponent('https://matic.eu.org/status-check')}`;
+              console.log(`[checkApiStatus] QRCode: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/translate') {
+              method = 'POST';
+              headers['Content-Type'] = 'application/json';
+              body = JSON.stringify({ text: 'Hello', sourceLang: 'en', targetLang: 'id' });
+              console.log(`[checkApiStatus] Translate: Sending POST with JSON body.`);
+          } else if (selectedEndpoint === '/api/hash') {
+              method = 'POST';
+              headers['Content-Type'] = 'application/json';
+              body = JSON.stringify({ data: 'test data', algorithm: 'sha256' });
+              console.log(`[checkApiStatus] Hash: Sending POST with JSON body.`);
+          } else if (selectedEndpoint === '/api/leet') {
+              method = 'POST';
+              headers['Content-Type'] = 'application/json';
+              body = JSON.stringify({ text: 'Test Leet' });
+              console.log(`[checkApiStatus] Leet: Sending POST with JSON body.`);
+          } else if (selectedEndpoint === '/api/currency') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?amount=1&from=USD&to=IDR`;
+              console.log(`[checkApiStatus] Currency: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/asciiart') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?text=test&font=Standard`;
+              console.log(`[checkApiStatus] ASCII Art: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/ssl') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?host=google.com`;
+              console.log(`[checkApiStatus] SSL: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/dns') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?domain=google.com`;
+              console.log(`[checkApiStatus] DNS: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/iplocator') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?ip=8.8.8.8`;
+              console.log(`[checkApiStatus] IP Locator: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/embed') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ`;
+              console.log(`[checkApiStatus] Embed: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/randomuser') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}`;
+              console.log(`[checkApiStatus] Random User: Sending GET.`);
+          } else if (selectedEndpoint === '/api/shorten') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?url=https://example.com/long-url-to-shorten`;
+              console.log(`[checkApiStatus] Shorten: Sending GET with URL params.`);
+          } else if (selectedEndpoint === '/api/whois') {
+              method = 'GET';
+              url = `${baseUrl}${selectedEndpoint}?url=https://google.com`;
+              console.log(`[checkApiStatus] Whois: Sending GET with URL params.`);
+          } else { // Default for generative AI endpoints (Gemini, DeepSeek, LLaMA, Microsoft, NVIDIA)
+              method = 'POST';
+              headers['Content-Type'] = 'application/json';
+              body = JSON.stringify({ prompt: 'Test connectivity.' });
+              console.log(`[checkApiStatus] AI Endpoint: Sending POST with JSON body.`);
+          }
+
+          res = await fetch(url, { method, headers: Object.keys(headers).length > 0 ? headers : undefined, body });
+          
+          responseTime = Math.round(performance.now() - start);
+          isOnline = res.ok;
+          console.log(`[checkApiStatus] Fetch response for ${selectedEndpoint}: Status ${res.status}, OK: ${res.ok}, Time: ${responseTime}ms`);
+>>>>>>> 71c1566 (status fix qrcode)
 
       } catch (error) {
-        responseTime = Math.round(performance.now() - start);
-        isOnline = false;
-        console.error(`[checkApiStatus] Fatal error during check for ${selectedEndpoint}:`, error);
+          responseTime = Math.round(performance.now() - start);
+          isOnline = false;
+          console.error(`[checkApiStatus] Fatal error during check for ${selectedEndpoint}:`, error);
       }
 
       apiChecks[selectedEndpoint].push({ timestamp: new Date(), isOnline, responseTime });
-      if (apiChecks[selectedEndpoint].length > 50) apiChecks[selectedEndpoint].shift(); 
+      if (apiChecks[selectedEndpoint].length > 50) apiChecks[selectedEndpoint].shift();  
 
       handleIncidents(selectedEndpoint, isOnline);
       updateUI();
@@ -447,4 +546,3 @@
   </script>
 </body>
 </html>
-
